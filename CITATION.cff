@@ -1,0 +1,82 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it as below."
+type: software
+title: "PhaseGPT: Kuramoto Phase-Coupled Oscillator Attention in Transformers"
+abstract: >
+  A systematic investigation of Kuramoto phase-coupled oscillator mechanisms
+  in transformer attention layers for language modeling. This project presents
+  the first rigorous hyperparameter study of phase synchronization dynamics in
+  transformers, achieving 2.4% perplexity improvement on Shakespeare dataset
+  with optimal configuration (Layer 7, 32 oscillators, K=1.0 coupling).
+  The research reveals a critical over-synchronization paradox and establishes
+  the Goldilocks principle for oscillator count selection.
+authors:
+  - family-names: "Two"
+    given-names: "Temple"
+    email: "contact@templetwo.dev"
+    affiliation: "Independent Researcher"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+repository-code: "https://github.com/templetwo/PhaseGPT"
+url: "https://github.com/templetwo/PhaseGPT"
+keywords:
+  - transformers
+  - attention mechanism
+  - Kuramoto model
+  - phase-coupled oscillators
+  - synchronization dynamics
+  - language modeling
+  - neural networks
+  - interpretability
+  - hyperparameter optimization
+license: MIT
+version: 1.0.0
+date-released: "2025-10-20"
+doi: "10.5281/zenodo.XXXXXXX"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.XXXXXXX"
+    description: "Zenodo archive"
+  - type: url
+    value: "https://osf.io/XXXXX/"
+    description: "OSF project"
+preferred-citation:
+  type: article
+  title: "Optimizing Kuramoto Phase-Coupled Attention: A Systematic Hyperparameter Study"
+  authors:
+    - family-names: "Two"
+      given-names: "Temple"
+  year: 2025
+  journal: "In Preparation"
+  notes: >
+    Phase A complete: Systematic evaluation of 7 configurations identifying
+    optimal parameters (Layer 7, 32 oscillators, K=1.0) achieving 4.85 PPL
+    (2.4% improvement over baseline). Critical findings include Goldilocks
+    principle for oscillator count, catastrophic collapse at K=2.0, and
+    over-synchronization paradox (R=0.88). Phase B generalization experiments
+    preregistered but not executed due to resource constraints.
+references:
+  - type: article
+    title: "Self-entrainment of a population of coupled non-linear oscillators"
+    authors:
+      - family-names: "Kuramoto"
+        given-names: "Yoshiki"
+    year: 1975
+    conference:
+      name: "International Symposium on Mathematical Problems in Theoretical Physics"
+    scope: "Foundational work on the Kuramoto model"
+  - type: article
+    title: "Attention is All You Need"
+    authors:
+      - family-names: "Vaswani"
+        given-names: "Ashish"
+    year: 2017
+    conference:
+      name: "NeurIPS"
+    scope: "Transformer architecture foundation"
+  - type: article
+    title: "Language Models are Unsupervised Multitask Learners"
+    authors:
+      - family-names: "Radford"
+        given-names: "Alec"
+    year: 2019
+    scope: "GPT-2 architecture"

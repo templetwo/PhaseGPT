@@ -1,0 +1,51 @@
+# Phase A Configuration - Layer 6 variant
+# Layer 6, 32 oscillators, K=1.0 coupling
+# Best Val PPL: 4.86 (2.2% improvement, nearly tied with Layer 7)
+
+model:
+  type: gpt2
+  n_layers: 12
+  n_heads: 12
+  d_model: 768
+  d_ff: 3072
+  vocab_size: 65
+  max_seq_len: 512
+  dropout: 0.1
+
+  # Phase-Coupled Attention Configuration
+  use_phase_attention: true
+  phase_layer_idx: [6]  # Single layer at position 6
+  num_oscillators: 32
+  coupling_strength: 1.0
+  natural_freq: 1.0
+  dt: 0.1
+  n_sync_steps: 5
+
+training:
+  batch_size: 32
+  gradient_accumulation_steps: 4
+  learning_rate: 3.0e-4
+  weight_decay: 0.1
+  max_epochs: 20
+  warmup_steps: 100
+  lr_scheduler: cosine
+  grad_clip: 1.0
+  patience: 5
+  min_delta: 0.001
+
+data:
+  dataset: shakespeare
+  train_split: 0.9
+  val_split: 0.1
+  block_size: 512
+
+logging:
+  log_interval: 50
+  eval_interval: 500
+  save_interval: 500
+  checkpoint_dir: checkpoints/
+
+experiment:
+  name: layer6_32osc_k1.0
+  seed: 42
+  device: cuda

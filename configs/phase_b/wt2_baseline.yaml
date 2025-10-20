@@ -1,0 +1,51 @@
+# WikiText-2 Baseline (no PhaseAttention)
+model:
+  type: gpt2
+  n_layers: 12
+  n_heads: 12
+  d_model: 768
+  vocab_size: null  # inferred from tokenizer
+  max_seq_len: 512
+  dropout: 0.1
+  attention_dropout: 0.1
+  residual_dropout: 0.1
+  
+  # Phase attention disabled
+  use_phase_attention: false
+  phase_layer_idx: null
+
+data:
+  dataset: wikitext-2
+  seq_len: 512
+  train_split: 0.9
+  num_workers: 8
+  pin_memory: true
+
+training:
+  epochs: 50
+  batch_size: 8
+  lr: 3.0e-4
+  weight_decay: 0.01
+  grad_clip: 1.0
+  
+  scheduler:
+    type: cosine
+    warmup_steps: 500
+    min_lr: 1.0e-5
+  
+  early_stopping:
+    enabled: true
+    metric: val_ppl
+    patience: 5
+    min_delta: 0.01
+
+logging:
+  log_interval: 100
+  eval_interval: 500
+  checkpoint_interval: 1000
+  r_tracking: false  # no phase attention
+
+device: cuda
+seed: 42
+
+notes: "Baseline GPT-2 on WikiText-2 for Phase B comparison"

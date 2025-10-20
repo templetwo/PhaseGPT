@@ -1,0 +1,68 @@
+# WikiText-2 KPC-Mid (K=0.75, moderate coupling)
+model:
+  type: gpt2
+  n_layers: 12
+  n_heads: 12
+  d_model: 768
+  vocab_size: null
+  max_seq_len: 512
+  dropout: 0.1
+  attention_dropout: 0.1
+  residual_dropout: 0.1
+  
+  # PhaseAttention enabled
+  use_phase_attention: true
+  phase_layer_idx: [7]
+  num_oscillators: 32
+  coupling_strength: 0.75  # Moderate coupling
+  natural_freq_std: 0.1
+  phase_iterations: 10
+  
+  # Anti-oversync controls
+  phase_noise_sigma: 0.0
+  freq_jitter: 0.0
+  
+  # Coherence regularizer
+  coherence_reg:
+    enabled: false
+    R_target: 0.45
+    lambda: 0.1
+    mode: ceiling
+
+data:
+  dataset: wikitext-2
+  seq_len: 512
+  train_split: 0.9
+  num_workers: 8
+  pin_memory: true
+
+training:
+  epochs: 50
+  batch_size: 8
+  lr: 3.0e-4
+  weight_decay: 0.01
+  grad_clip: 1.0
+  
+  scheduler:
+    type: cosine
+    warmup_steps: 500
+    min_lr: 1.0e-5
+  
+  early_stopping:
+    enabled: true
+    metric: val_ppl
+    patience: 5
+    min_delta: 0.01
+
+logging:
+  log_interval: 100
+  eval_interval: 500
+  checkpoint_interval: 1000
+  r_tracking: true
+  r_interval: 500
+  save_phase_snapshots: false
+
+device: cuda
+seed: 42
+
+notes: "KPC with K=0.75 (moderate coupling) between soft and Phase A winner"

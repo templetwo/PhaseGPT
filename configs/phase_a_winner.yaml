@@ -1,0 +1,70 @@
+# Phase A Winner - Quick Access Configuration
+# Layer 7, 32 oscillators, K=1.0 coupling
+# Best Val PPL: 4.85 (2.4% improvement over 4.97 baseline)
+#
+# This is the optimal configuration identified through systematic
+# hyperparameter search across 7 configurations.
+#
+# Key findings:
+# - Single layer (7) outperforms multi-layer designs
+# - 32 oscillators is the "Goldilocks zone" (16 unstable, 64 catastrophic)
+# - K=1.0 optimal (K=2.0 causes collapse)
+#
+# Usage:
+#   python src/train.py --config configs/phase_a_winner.yaml
+
+model:
+  type: gpt2
+  n_layers: 12
+  n_heads: 12
+  d_model: 768
+  d_ff: 3072
+  vocab_size: 65  # char-level Shakespeare
+  max_seq_len: 512
+  dropout: 0.1
+
+  # Phase-Coupled Attention Configuration (OPTIMAL)
+  use_phase_attention: true
+  phase_layer_idx: [7]  # Single layer at position 7
+  num_oscillators: 32   # Goldilocks zone
+  coupling_strength: 1.0  # Optimal balance
+  natural_freq: 1.0
+  dt: 0.1
+  n_sync_steps: 5
+
+training:
+  batch_size: 32
+  gradient_accumulation_steps: 4
+  learning_rate: 3.0e-4
+  weight_decay: 0.1
+  max_epochs: 20  # Peaks around epoch 18
+  warmup_steps: 100
+  lr_scheduler: cosine
+  grad_clip: 1.0
+
+  # Early stopping (recommended)
+  patience: 5
+  min_delta: 0.001
+
+data:
+  dataset: shakespeare
+  train_split: 0.9
+  val_split: 0.1
+  block_size: 512
+
+logging:
+  log_interval: 50
+  eval_interval: 500
+  save_interval: 500
+  checkpoint_dir: checkpoints/
+
+experiment:
+  name: phase_a_winner
+  seed: 42
+  device: cuda
+
+# Expected results:
+# - Val PPL: ~4.85
+# - Training time: ~25 minutes on GH200
+# - Peak performance: epoch 18
+# - Order parameter R: ~0.88 (over-synchronized)
