@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
+[![OSF](https://img.shields.io/badge/OSF-10.17605%2FOSF.IO%2FZQBC4-blue)](https://doi.org/10.17605/OSF.IO/ZQBC4)
 
 A systematic investigation of Kuramoto phase-coupled oscillator mechanisms in transformer attention layers for language modeling. This project presents the first rigorous hyperparameter study demonstrating that phase synchronization dynamics can improve language model performance while revealing critical insights about over-synchronization risks.
 
@@ -225,7 +226,7 @@ If you use PhaseGPT in your research, please cite:
   author = {Temple Two},
   year = {2025},
   url = {https://github.com/templetwo/PhaseGPT},
-  doi = {10.5281/zenodo.XXXXXXX},
+  doi = {10.17605/OSF.IO/ZQBC4},
   note = {Phase A: Systematic hyperparameter study demonstrating 2.4\% improvement with optimal configuration (Layer 7, 32 oscillators, K=1.0). Phase B generalization experiments preregistered but not executed.}
 }
 ```

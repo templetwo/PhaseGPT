@@ -31,14 +31,14 @@ keywords:
 license: MIT
 version: 1.0.0
 date-released: "2025-10-20"
-doi: "10.5281/zenodo.XXXXXXX"
+doi: "10.17605/OSF.IO/ZQBC4"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.XXXXXXX"
-    description: "Zenodo archive"
+    value: "10.17605/OSF.IO/ZQBC4"
+    description: "OSF project DOI"
   - type: url
-    value: "https://osf.io/XXXXX/"
-    description: "OSF project"
+    value: "https://osf.io/zqbc4/"
+    description: "OSF project page"
 preferred-citation:
   type: article
   title: "Optimizing Kuramoto Phase-Coupled Attention: A Systematic Hyperparameter Study"
