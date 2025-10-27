@@ -1,0 +1,201 @@
+# Track B: KTO (Kahneman-Tversky Optimization) Regularized DPO
+# Target: Reduce perplexity by 5-10% while maintaining Spiral Score
+#
+# Motivation: DPO can over-optimize for preferred style at the expense
+# of fluency. KTO adds a reference model KL term to preserve linguistic quality.
+#
+# Loss: L_KTO = L_DPO + λ * KL(P_θ || P_ref)
+#
+# v1.3 baseline:
+#   - Spiral Score: 0.73
+#   - Perplexity: 43.2
+#
+# v1.4 KTO targets:
+#   - Spiral Score: ≥0.73 (maintain)
+#   - Perplexity: <40.0 (reduce by ~7%)
+#   - Human preference: >v1.3 in blind A/B tests
+
+model:
+  base_model: "Qwen/Qwen2.5-0.5B-Instruct"
+
+  # Phase-Coupled Attention
+  use_phase_attention: true
+  phase_layer_idx: [7]
+  num_oscillators: 32
+  coupling_strength: 1.0
+  natural_freq: 1.0
+  dt: 0.1
+  n_sync_steps: 5
+
+  # LoRA Configuration
+  lora_config:
+    r: 16
+    lora_alpha: 32
+    lora_dropout: 0.05
+    target_modules:
+      - "q_proj"
+      - "v_proj"
+      - "k_proj"
+      - "o_proj"
+    bias: "none"
+    task_type: "CAUSAL_LM"
+
+training:
+  method: "kto"  # Kahneman-Tversky Optimization
+
+  # DPO Component
+  beta: 0.1  # Preference strength
+  max_length: 512
+  max_prompt_length: 128
+
+  # KTO Regularization
+  kto_config:
+    enabled: true
+    lambda: 0.1  # Regularization weight (grid search: [0.01, 0.1, 0.5])
+    reference_model: "checkpoints/v12_lora/adapter_model"  # Pre-DPO baseline
+
+    # KL computation
+    kl_temperature: 1.0
+    kl_penalty_type: "kl"  # or "reverse_kl", "js_divergence"
+
+    # Annealing schedule (optional)
+    lambda_schedule:
+      enabled: false
+      initial_lambda: 0.05
+      final_lambda: 0.15
+      schedule_type: "linear"  # or "cosine"
+
+  # Optimization
+  learning_rate: 5.0e-5
+  num_epochs: 3
+  batch_size: 4
+  gradient_accumulation_steps: 8
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  # Scheduler
+  lr_scheduler: "cosine"
+
+  # Mixed precision
+  fp16: true
+
+data:
+  # Use same 10-pair dataset as v1.3 for direct comparison
+  preference_dataset: "data/preferences_v13_10pairs.jsonl"
+
+  # Or use extended dataset (Track A)
+  # preference_dataset: "data/preferences_v14_100pairs.jsonl"
+
+  # Train/validation split
+  train_split: 0.8
+  val_split: 0.2
+
+evaluation:
+  # Core metrics
+  metrics:
+    - "spiral_score"
+    - "perplexity"
+    - "subtlety"
+    - "reward_margin"
+    - "kl_divergence"  # KTO-specific: KL from reference model
+
+  # Evaluation frequency
+  eval_interval: 100
+  eval_steps: 200
+
+  # Checkpointing
+  save_strategy: "steps"
+  save_steps: 100
+  save_total_limit: 5
+  save_best_only: true
+  metric_for_best_model: "perplexity"  # Optimize for fluency
+
+  # Comparison to v1.3 baseline
+  baseline_checkpoint: "checkpoints/v13_dpo/final_model"
+  compute_relative_metrics: true
+
+logging:
+  # WandB integration
+  use_wandb: true
+  wandb_project: "phasegpt-v14"
+  wandb_run_name: "track_b_kto_lambda0.1"
+
+  # Local logging
+  output_dir: "checkpoints/v14/track_b/kto_lambda0.1"
+  logging_steps: 10
+  log_level: "info"
+
+  # KTO-specific logging
+  log_kl_components: true
+  log_reward_components: true
+
+  # Phase dynamics tracking
+  track_phase_dynamics: true
+  phase_log_interval: 50
+
+experiment:
+  name: "v14_track_b_kto_regularized"
+  seed: 42
+  device: "cuda"
+
+  # Reproducibility
+  deterministic: true
+
+  # Resource management
+  num_workers: 4
+  pin_memory: true
+
+# Hyperparameter grid search
+# Run this config with different lambda values:
+# - lambda=0.01: Weak regularization (close to pure DPO)
+# - lambda=0.1:  Moderate (recommended starting point)
+# - lambda=0.5:  Strong (prioritizes fluency)
+#
+# Command:
+#   python train.py --config configs/v14/kto_regularized.yaml --kto_lambda 0.1
+
+ablation_study:
+  runs:
+    - name: "kto_lambda0.01"
+      kto_lambda: 0.01
+      expected: "~DPO behavior, high Spiral Score, higher perplexity"
+
+    - name: "kto_lambda0.1"
+      kto_lambda: 0.1
+      expected: "Balanced, moderate gains on both metrics"
+
+    - name: "kto_lambda0.5"
+      kto_lambda: 0.5
+      expected: "Fluent but may lose Spiral Score"
+
+  comparison_metrics:
+    - "spiral_score"
+    - "perplexity"
+    - "kl_divergence"
+    - "human_preference_score"  # A/B test against v1.3
+
+# Expected computational requirements:
+# - GPU Memory: ~18GB (stores both policy and reference models)
+# - Training Time: ~5-7 hours (A100) [slightly slower than DPO]
+# - Disk Space: ~8GB (2x checkpoints + logs)
+
+# Success criteria:
+# - Perplexity: <40.0 (reduce by ~7% from v1.3)
+# - Spiral Score: ≥0.70 (maintain within 5% of v1.3)
+# - Human preference: >50% preference for KTO outputs vs. v1.3 in blind tests
+# - KL divergence: <2.0 (not too far from reference model)
+
+notes: |
+  Track B tests whether regularization can improve fluency without
+  sacrificing dialectical reasoning. KTO balances two objectives:
+
+  1. Alignment (DPO loss): Prefer dialectically rich outputs
+  2. Fluency (KL penalty): Stay close to the fluent reference model
+
+  Key research questions:
+  - What is the optimal λ trade-off?
+  - Does KTO enable better human preference ratings?
+  - Can we reduce perplexity without losing subtlety?
+
+  If successful, KTO becomes the default training method for v1.5+.

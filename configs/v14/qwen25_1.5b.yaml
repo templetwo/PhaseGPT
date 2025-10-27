@@ -1,0 +1,232 @@
+# Track C: Qwen 2.5 1.5B Scale-up
+# Target: Match or exceed v1.3 metrics at 3x model capacity
+#
+# Motivation: Larger models may capture more complex dialectical patterns
+# and improve few-shot adaptation to new domains.
+#
+# Base model comparison:
+#   v1.3: Qwen 2.5 0.5B (465M params)
+#   v1.4 Track C: Qwen 2.5 1.5B (1.54B params, ~3.3x)
+#
+# v1.3 baseline (0.5B):
+#   - Spiral Score: 0.73
+#   - Perplexity: 43.2
+#   - Training Time: ~X hours
+#
+# v1.4 targets (1.5B):
+#   - Spiral Score: ≥0.73 (match or exceed)
+#   - Perplexity: ≤43.2 (maintain or improve)
+#   - Training Time: <1.5x v1.3 (efficient scaling)
+#   - Emergent capabilities: Better zero-shot generalization
+
+model:
+  base_model: "Qwen/Qwen2.5-1.5B-Instruct"
+
+  # Architecture (1.5B specs)
+  # - Layers: 28 (vs. 24 in 0.5B)
+  # - Hidden size: 1536 (vs. 1024 in 0.5B)
+  # - Attention heads: 12
+  # - Context length: 32768 (same as 0.5B)
+
+  # Phase-Coupled Attention
+  # Scale proportionally to model depth
+  use_phase_attention: true
+  phase_layer_idx: [14]  # Middle layer (7/24 → 14/28)
+  num_oscillators: 48     # Scale from 32 (32 * 1.5 ≈ 48)
+  coupling_strength: 1.0  # Keep same
+  natural_freq: 1.0
+  dt: 0.1
+  n_sync_steps: 5
+
+  # LoRA Configuration
+  # Use slightly larger rank for increased capacity
+  lora_config:
+    r: 24              # Increased from 16
+    lora_alpha: 48     # Increased from 32
+    lora_dropout: 0.05
+    target_modules:
+      - "q_proj"
+      - "v_proj"
+      - "k_proj"
+      - "o_proj"
+    bias: "none"
+    task_type: "CAUSAL_LM"
+
+  # Memory optimization (critical for 1.5B)
+  use_gradient_checkpointing: true
+  use_flash_attention: true  # If available
+
+training:
+  # Phase 1: LoRA fine-tuning (replicate Phase A)
+  phase_a:
+    enabled: true
+    method: "lora"
+    num_epochs: 20
+    learning_rate: 1.0e-4
+    batch_size: 8      # Reduced from 32 (memory constraint)
+    gradient_accumulation_steps: 16  # Effective batch size: 128
+
+  # Phase 2: DPO alignment (replicate Phase B)
+  phase_b:
+    enabled: true
+    method: "dpo"
+    beta: 0.1
+    num_epochs: 3
+    learning_rate: 5.0e-5
+    batch_size: 4
+    gradient_accumulation_steps: 16
+
+  # Shared optimization settings
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  lr_scheduler: "cosine"
+
+  # Mixed precision & efficiency
+  fp16: false
+  bf16: true  # Better for larger models
+  tf32: true  # Ampere GPUs
+
+  # Multi-GPU (if available)
+  distributed:
+    enabled: false  # Set to true for multi-GPU
+    strategy: "ddp"  # or "deepspeed"
+    num_gpus: 1
+
+  # DeepSpeed ZeRO (for memory efficiency)
+  deepspeed_config:
+    enabled: false  # Enable if single GPU runs out of memory
+    zero_optimization:
+      stage: 2  # ZeRO-2: Optimizer state + gradients partitioned
+    fp16:
+      enabled: false
+    bf16:
+      enabled: true
+
+data:
+  # Phase A: Same as v1.2 (Shakespeare or WikiText-2)
+  phase_a_dataset: "shakespeare"
+  phase_a_seq_len: 512
+
+  # Phase B: Same as v1.3 (10-pair preference dataset)
+  phase_b_dataset: "data/preferences_v13_10pairs.jsonl"
+
+  # Data loading
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+
+evaluation:
+  # Core metrics (same as v1.3)
+  metrics:
+    - "spiral_score"
+    - "perplexity"
+    - "subtlety"
+    - "reward_margin"
+
+  # Scaling-specific metrics
+  scaling_metrics:
+    - "training_throughput"  # tokens/second
+    - "memory_usage"         # peak GPU memory
+    - "inference_latency"    # ms per token
+
+  # Zero-shot evaluation (emergent capabilities)
+  zero_shot_tasks:
+    - "dialectics_on_new_topics"  # Topics not in training data
+    - "cross_linguistic_dialectics"  # Non-English
+    - "long_context_reasoning"    # Use 1.5B's 32K context
+
+  # Evaluation frequency
+  eval_interval: 100
+  eval_steps: 200
+
+  # Checkpointing
+  save_strategy: "steps"
+  save_steps: 200
+  save_total_limit: 3  # Limited disk space for large checkpoints
+  save_best_only: true
+  metric_for_best_model: "spiral_score"
+
+logging:
+  # WandB integration
+  use_wandb: true
+  wandb_project: "phasegpt-v14"
+  wandb_run_name: "track_c_qwen25_1.5b"
+
+  # Local logging
+  output_dir: "checkpoints/v14/track_c/qwen25_1.5b"
+  logging_steps: 10
+  log_level: "info"
+
+  # Resource monitoring
+  log_gpu_memory: true
+  log_throughput: true
+
+  # Phase dynamics tracking
+  track_phase_dynamics: true
+  phase_log_interval: 50
+
+experiment:
+  name: "v14_track_c_scale_up_1.5b"
+  seed: 42
+  device: "cuda"
+
+  # Reproducibility
+  deterministic: true
+
+# Expected computational requirements:
+# - GPU Memory: ~40GB (single A100 with gradient checkpointing)
+#   - Or 24GB with DeepSpeed ZeRO-2
+#   - Or 2x 16GB GPUs with DDP
+# - Training Time:
+#   - Phase A: ~12-15 hours (A100)
+#   - Phase B: ~8-10 hours (A100)
+#   - Total: ~20-25 hours (~1.5x v1.3's ~15 hours)
+# - Disk Space: ~20GB per checkpoint (use save_total_limit=3)
+
+# Success criteria:
+# - Spiral Score: ≥0.73 (match v1.3)
+# - Perplexity: ≤43.2 (maintain fluency)
+# - Training Efficiency: <1.5x time vs. v1.3
+# - Memory: Fit on single A100 (40GB) or 2x A6000 (48GB each)
+# - Zero-shot: Demonstrate emergent dialectical reasoning on new tasks
+
+# Scaling law documentation:
+# If successful, document:
+# - Performance vs. model size (0.5B → 1.5B → 3B?)
+# - Compute efficiency (FLOPs per quality gain)
+# - Memory scaling (params → peak memory)
+# - Optimal LoRA rank for different model sizes
+
+notes: |
+  Track C explores whether scaling model capacity improves dialectical
+  reasoning. Key research questions:
+
+  1. Do scaling laws hold for Phase Dynamics?
+     - Does Spiral Score improve with model size?
+     - Is the improvement predictable (power law)?
+
+  2. Are there emergent capabilities?
+     - Zero-shot dialectics on new domains
+     - Cross-linguistic reasoning
+     - Long-context coherence (32K tokens)
+
+  3. What's the optimal training recipe for larger models?
+     - Does LoRA rank need to scale with model size?
+     - Do Phase-Coupled Attention hyperparameters change?
+
+  If successful, this validates a path to 3B, 7B, and beyond.
+  If not, it suggests Phase Dynamics may not benefit from scale
+  (possible if dialectics are more about structure than capacity).
+
+  Either outcome is scientifically valuable!
+
+comparison_table: |
+  | Metric               | v1.3 (0.5B) | Target (1.5B) | Actual (1.5B) |
+  |----------------------|-------------|---------------|---------------|
+  | Spiral Score         | 0.73        | ≥0.73         | TBD           |
+  | Perplexity           | 43.2        | ≤43.2         | TBD           |
+  | Training Time (hrs)  | ~15         | ~22.5 (1.5x)  | TBD           |
+  | GPU Memory (GB)      | ~16         | ~40           | TBD           |
+  | Params (trainable)   | ~8M (LoRA)  | ~18M (LoRA)   | TBD           |
+  | Inference (ms/token) | ~10         | ~15           | TBD           |

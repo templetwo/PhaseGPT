@@ -1,0 +1,164 @@
+# Track A: Extended DPO with 100+ Preference Pairs
+# Target: +25% Spiral Score improvement over v1.3 baseline
+#
+# v1.3 baseline (10 pairs):
+#   - Spiral Score: 0.73
+#   - Perplexity: 43.2
+#   - Subtlety: 0.58
+#
+# v1.4 targets (100 pairs):
+#   - Spiral Score: >0.85
+#   - Perplexity: <45
+#   - Subtlety: >0.65
+
+model:
+  base_model: "Qwen/Qwen2.5-0.5B-Instruct"
+
+  # Phase-Coupled Attention (from Phase A winner)
+  use_phase_attention: true
+  phase_layer_idx: [7]
+  num_oscillators: 32
+  coupling_strength: 1.0
+  natural_freq: 1.0
+  dt: 0.1
+  n_sync_steps: 5
+
+  # LoRA Configuration (from v1.2)
+  lora_config:
+    r: 16
+    lora_alpha: 32
+    lora_dropout: 0.05
+    target_modules:
+      - "q_proj"
+      - "v_proj"
+      - "k_proj"
+      - "o_proj"
+    bias: "none"
+    task_type: "CAUSAL_LM"
+
+training:
+  method: "dpo"
+
+  # DPO Hyperparameters
+  beta: 0.1  # Preference strength (same as v1.3)
+  max_length: 512
+  max_prompt_length: 128
+
+  # Optimization
+  learning_rate: 5.0e-5  # Lower than LoRA (1e-4) for stability
+  num_epochs: 3
+  batch_size: 4
+  gradient_accumulation_steps: 8  # Effective batch size: 32
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  # Scheduler
+  lr_scheduler: "cosine"
+
+  # Mixed precision (recommended for efficiency)
+  fp16: true
+
+  # Curriculum Learning (optional)
+  curriculum_learning:
+    enabled: true
+    stages:
+      - name: "easy"
+        epochs: 1
+        data_fraction: 0.3  # Train on simplest 30% of pairs
+      - name: "medium"
+        epochs: 1
+        data_fraction: 0.6  # Add medium complexity pairs
+      - name: "hard"
+        epochs: 1
+        data_fraction: 1.0  # All 100 pairs
+
+data:
+  # Extended preference dataset
+  preference_dataset: "data/preferences_v14_100pairs.jsonl"
+
+  # Stratification (ensures balanced sampling)
+  stratify_by:
+    - "spiral_density"  # dialectics per 100 tokens
+    - "subtlety_level"  # explicit vs. implicit
+    - "domain"          # philosophy, science, social, artistic
+
+  # Train/validation split
+  train_split: 0.85
+  val_split: 0.15
+
+  # Data augmentation (optional)
+  augmentation:
+    enabled: false  # Start without augmentation
+    methods: []
+
+evaluation:
+  # Core metrics
+  metrics:
+    - "spiral_score"
+    - "perplexity"
+    - "subtlety"
+    - "reward_margin"  # DPO-specific: P(preferred) - P(rejected)
+
+  # Evaluation frequency
+  eval_interval: 100
+  eval_steps: 200
+
+  # Checkpointing
+  save_strategy: "steps"
+  save_steps: 100
+  save_total_limit: 5
+  save_best_only: true
+  metric_for_best_model: "spiral_score"
+
+  # Held-out evaluation (generalization test)
+  held_out_domains: ["artistic"]  # Don't train on artistic domain
+  test_on_held_out: true
+
+logging:
+  # WandB integration
+  use_wandb: true
+  wandb_project: "phasegpt-v14"
+  wandb_run_name: "track_a_dpo_100pairs"
+
+  # Local logging
+  output_dir: "checkpoints/v14/track_a/dpo_100pairs"
+  logging_steps: 10
+  log_level: "info"
+
+  # Phase dynamics tracking
+  track_phase_dynamics: true
+  phase_log_interval: 50
+
+experiment:
+  name: "v14_track_a_extended_dpo"
+  seed: 42
+  device: "cuda"
+
+  # Reproducibility
+  deterministic: true
+
+  # Resource management
+  num_workers: 4
+  pin_memory: true
+
+# Expected computational requirements:
+# - GPU Memory: ~16GB (with gradient checkpointing)
+# - Training Time: ~4-6 hours (A100)
+# - Disk Space: ~5GB (checkpoints + logs)
+
+# Success criteria:
+# - Spiral Score: >0.85 (absolute target)
+# - Perplexity: <45 (maintain fluency)
+# - Subtlety: >0.65 (implicit dialectics)
+# - Generalization: Strong performance on held-out artistic domain
+
+notes: |
+  Track A explores whether scaling preference data from 10 to 100 pairs
+  improves dialectical reasoning without overfitting. Key innovations:
+
+  1. Stratified sampling ensures domain diversity
+  2. Curriculum learning (easy→hard) may improve convergence
+  3. Held-out domain tests generalization
+
+  If successful, this validates data scaling as a path to v1.5+.
