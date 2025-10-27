@@ -53,6 +53,87 @@ Version 1.4 builds on v1.3's DPO foundation to explore extended training, regula
 
 ---
 
+## [2025-10-27] - Infrastructure - ✅ Complete
+
+### What Changed
+- Implemented Track A automation pipeline
+- Created preference pair generation and validation infrastructure
+- Added Makefile with common development tasks
+
+### Why
+Track A (Extended DPO) is the highest-priority research direction, targeting +25% Spiral Score improvement. Automation reduces friction and enables rapid iteration on preference data quality and training hyperparameters.
+
+### Files Created
+- `scripts/generate_preferences.py` - Stratified preference pair generator
+  - Supports 4 domains: philosophy, science, social, artistic
+  - 3 complexity levels: simple, medium, complex
+  - 3 subtlety levels: explicit, moderate, implicit
+  - Generates balanced JSONL dataset
+
+- `scripts/validate_preferences.py` - Dataset format and quality validator
+  - Checks required fields (prompt, chosen, rejected)
+  - Validates data types and non-empty constraints
+  - Ensures chosen ≠ rejected
+  - Reports distribution statistics
+
+- `scripts/run_track_a.sh` - End-to-end Track A orchestration
+  - Step 1: Generate 100 preference pairs
+  - Step 2: Validate dataset format
+  - Step 3: Train DPO model
+  - Step 4: Evaluate metrics
+  - Step 5: Compare vs v1.3 baseline
+  - Includes dry-run mode and skip flags
+
+- `Makefile` - Common development commands
+  - `make gen-data` - Generate preference pairs
+  - `make validate-data` - Validate dataset
+  - `make track-a` - Run full Track A pipeline
+  - `make train-a/b/c` - Train individual tracks
+  - `make eval` - Run evaluation
+  - `make compare` - Compare vs baseline
+  - `make status` - Show project status
+  - `make sync` - Sync with remote repository
+
+### Testing
+Successfully tested with 10-pair sample dataset:
+- ✅ Generation produces valid JSONL with stratified sampling
+- ✅ Validation passes all format checks
+- ✅ Distribution statistics correctly computed
+- ✅ Makefile targets execute without errors
+
+### Configuration
+All scripts follow project conventions:
+- Use `.venv` virtual environment
+- Output to `data/` directory
+- Checkpoints to `checkpoints/v14/track_a/`
+- Logging with colored status indicators
+- Support for dry-run and debugging modes
+
+### Next Steps
+1. **Run Track A pipeline:**
+   ```bash
+   make gen-data          # Generate 100 pairs
+   make validate-data     # Verify format
+   bash scripts/run_track_a.sh  # Full pipeline
+   ```
+
+2. **Implement training integration:**
+   - Adapt `src/train.py` for DPO training
+   - Connect to HuggingFace TRL library
+   - Add WandB logging hooks
+
+3. **Implement evaluation:**
+   - Port Spiral Score calculation from v1.3
+   - Add perplexity and subtlety metrics
+   - Create comparison report generator
+
+4. **Document first run:**
+   - Log metrics to this changelog
+   - Archive checkpoint to OSF if successful
+   - Commit results and push to GitHub
+
+---
+
 ## Template for Future Entries
 
 Copy and adapt this template for new changelog entries:
