@@ -105,11 +105,11 @@ GGUF_FP16="exports/phasegpt-v14-merged/phasegpt-v14.gguf"
 GGUF_Q4="exports/phasegpt-v14-merged/phasegpt-v14.Q4_K_M.gguf"
 
 SHA_FP16=$(shasum -a 256 "$GGUF_FP16" | awk '{print $1}')
-SIZE_FP16=$(python3 -c "import os; print(f'{os.path.getsize('$GGUF_FP16')/1024/1024:.2f}')")
+SIZE_FP16=$(python3 -c "import os; print(f'{os.path.getsize(\"$GGUF_FP16\")/1024/1024:.2f}')")
 
 if [ -f "$GGUF_Q4" ]; then
     SHA_Q4=$(shasum -a 256 "$GGUF_Q4" | awk '{print $1}')
-    SIZE_Q4=$(python3 -c "import os; print(f'{os.path.getsize('$GGUF_Q4')/1024/1024:.2f}')")
+    SIZE_Q4=$(python3 -c "import os; print(f'{os.path.getsize(\"$GGUF_Q4\")/1024/1024:.2f}')")
 else
     SHA_Q4="(not built)"
     SIZE_Q4="n/a"

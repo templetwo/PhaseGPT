@@ -148,3 +148,7 @@ secrets.yaml
 
 # Additional security
 **/.env
+
+# GGUF exports (large binaries)
+*.gguf
+exports/*.gguf
