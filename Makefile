@@ -1,7 +1,7 @@
 .PHONY: help setup install test clean \
 	gen-data validate-data \
 	train-a train-b train-c \
-	eval compare compare-batch compare-interactive dashboard \
+	eval compare compare-batch compare-interactive dashboard overnight \
 	track-a track-b track-c \
 	archive commit push sync
 
@@ -144,6 +144,22 @@ dashboard: $(VENV) ## Launch Gradio web dashboard for PhaseGPT v1.4
 	@echo "  • Uncertainty/presence guard for epistemic humility"
 	@echo ""
 	$(PYTHON_VENV) scripts/app_phasegpt.py
+
+overnight: $(VENV) ## Run overnight grid search (train + eval + promote best)
+	@echo "$(BLUE)Starting overnight grid search...$(NC)"
+	@echo ""
+	@echo "$(YELLOW)⚠$(NC)  This will run for several hours"
+	@echo "Search space:"
+	@echo "  • Steps: 120, 240"
+	@echo "  • Beta: 0.1, 0.3, 0.7"
+	@echo "  • Seeds: 1, 2"
+	@echo "  • Total configs: 12"
+	@echo ""
+	@echo "Results will be in:"
+	@echo "  • reports/overnight_summary.md"
+	@echo "  • checkpoints/v14/track_a/hybrid_sft_dpo/final (best config)"
+	@echo ""
+	@bash scripts/overnight.sh
 
 ##@ Full Pipelines
 

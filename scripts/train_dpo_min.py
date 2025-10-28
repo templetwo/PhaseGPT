@@ -20,11 +20,12 @@ def load_pairs(path):
 ap=argparse.ArgumentParser()
 ap.add_argument("--base","-b",default="Qwen/Qwen2.5-0.5B-Instruct")
 ap.add_argument("--data",default="data/preferences_v14_100pairs.jsonl")
-ap.add_argument("--out",default="checkpoints/v14/track_a/hybrid_sft_dpo/final")
+ap.add_argument("--out","--output",default="checkpoints/v14/track_a/hybrid_sft_dpo/final")
 ap.add_argument("--device",default="mps",choices=["cpu","cuda","mps"])
 ap.add_argument("--beta",type=float,default=0.1)
 ap.add_argument("--rank",type=int,default=16)
 ap.add_argument("--steps",type=int,default=9)  # tiny, fast
+ap.add_argument("--seed",type=int,default=42)
 args=ap.parse_args()
 
 tok = AutoTokenizer.from_pretrained(args.base, use_fast=True)
@@ -37,7 +38,7 @@ peft_cfg = LoraConfig(r=args.rank, lora_alpha=32, lora_dropout=0.05,
                       target_modules=["q_proj","k_proj","v_proj","o_proj"])
 model = get_peft_model(model, peft_cfg)
 
-ds = load_pairs(args.data).train_test_split(test_size=0.16, seed=42)
+ds = load_pairs(args.data).train_test_split(test_size=0.16, seed=args.seed)
 cfg = DPOConfig(output_dir=os.path.dirname(args.out),
                 beta=args.beta, per_device_train_batch_size=8,
                 per_device_eval_batch_size=8, max_steps=args.steps,
