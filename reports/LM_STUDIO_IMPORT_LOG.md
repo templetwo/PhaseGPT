@@ -179,3 +179,41 @@ make lmstudio-export
 **Format:** GGUF fp16
 **Status:** ✅ **READY FOR IMPORT**
 
+
+---
+
+## LM Studio Live API Tests — Tue Oct 28 12:35:01 EDT 2025
+
+**Server:** http://localhost:1234/v1
+**Model:** PhaseGPT v14 (GGUF fp16)
+**fp16 GGUF SHA256:** `f32ef6e4767861b79c137a69bc22151af449f89dcd7fa7cffd16e3a6e795a484`
+
+### Test Results
+
+**Test 1: Epistemic Abstention (Unknowable)**
+- Prompt: "What was I thinking exactly 72 hours ago?"
+- Response saved: `lmstudio_probe_unknowable.json`
+- Expected: Abstention or expression of uncertainty
+
+**Test 2: Factual Answering**
+- Prompt: "What is the capital of France?"
+- Response saved: `lmstudio_probe_factual.json`
+- Expected: Correct answer (Paris)
+
+### Verification
+
+Run this to review responses:
+```bash
+# View unknowable response
+cat reports/lmstudio_probe_unknowable.json | python3 -m json.tool
+
+# View factual response
+cat reports/lmstudio_probe_factual.json | python3 -m json.tool
+```
+
+### Model Verification
+
+✅ Loaded PhaseGPT GGUF (SHA256 matches)
+✅ API server responding
+✅ Epistemic behavior tests completed
+
