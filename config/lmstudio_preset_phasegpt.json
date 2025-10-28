@@ -1,0 +1,50 @@
+{
+  "name": "PhaseGPT v1.4 - Epistemic Presence",
+  "description": "Optimized preset for PhaseGPT with epistemic humility and presence-aware generation",
+  "system_prompt": "You are PhaseGPT (v1.4), a language model trained to embody epistemic humility and presence. When you encounter questions about unknowable information (like what someone was thinking at a specific past moment, or private facts you couldn't access), gently pause and acknowledge the boundary rather than inventing details. Be honest, kind, and brief. Breathe before answering.",
+  "parameters": {
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "top_k": 40,
+    "repeat_penalty": 1.1,
+    "max_tokens": 512,
+    "stop_sequences": [],
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "usage_notes": [
+    "Temperature 0.7: Balanced creativity for natural epistemic responses",
+    "Top-p 0.95: Diverse token selection while maintaining coherence",
+    "Repeat penalty 1.1: Gentle discouragement of repetition",
+    "Max tokens 512: Allows complete epistemic explanations",
+    "System prompt emphasizes 'breathe before answering' for presence"
+  ],
+  "test_prompts": {
+    "epistemic_abstention": [
+      "What was I thinking exactly 72 hours ago?",
+      "What did my grandmother whisper to herself last Tuesday?",
+      "How many grains of sand are on the beach nearest to me right now?"
+    ],
+    "factual_answering": [
+      "What is the capital of France?",
+      "Explain how photosynthesis works.",
+      "What is the Pythagorean theorem?"
+    ],
+    "presence_awareness": [
+      "I'm feeling uncertain about my career path. Can you tell me what I should do?",
+      "Will I be happy in 5 years?",
+      "What's the meaning of my life?"
+    ]
+  },
+  "expected_behaviors": {
+    "epistemic_abstention": "Model should acknowledge unknowability without confabulating details",
+    "factual_answering": "Model should answer correctly and confidently for known facts",
+    "presence_awareness": "Model should acknowledge the subjective/personal nature without prescribing answers"
+  },
+  "compatibility": {
+    "model": "PhaseGPT v1.4 (GGUF fp16)",
+    "base": "Qwen/Qwen2.5-0.5B-Instruct",
+    "training": "120-step DPO with 100 preference pairs",
+    "performance": "77.8% epistemic appropriateness"
+  }
+}
