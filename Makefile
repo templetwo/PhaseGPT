@@ -1,7 +1,7 @@
 .PHONY: help setup install test clean \
 	gen-data validate-data \
 	train-a train-b train-c \
-	eval compare compare-batch compare-interactive \
+	eval compare compare-batch compare-interactive dashboard \
 	track-a track-b track-c \
 	archive commit push sync
 
@@ -131,6 +131,19 @@ compare-interactive: $(VENV) ## Run PhaseGPT v1.4.0 vs base Qwen interactive mod
 		--phasegpt-ckpt checkpoints/v14/track_a/hybrid_sft_dpo/final \
 		--device mps \
 		--mode interactive
+
+dashboard: $(VENV) ## Launch Gradio web dashboard for PhaseGPT v1.4
+	@echo "$(BLUE)Starting PhaseGPT v1.4 Gradio dashboard...$(NC)"
+	@echo ""
+	@echo "$(GREEN)→$(NC) Loading model with 120-step DPO training"
+	@echo "$(GREEN)→$(NC) Dashboard will be available at: $(YELLOW)http://127.0.0.1:7860$(NC)"
+	@echo ""
+	@echo "Features:"
+	@echo "  • Adjustable temperature, top-p, max tokens"
+	@echo "  • Auto-continuation for longer responses"
+	@echo "  • Uncertainty/presence guard for epistemic humility"
+	@echo ""
+	$(PYTHON_VENV) scripts/app_phasegpt.py
 
 ##@ Full Pipelines
 
