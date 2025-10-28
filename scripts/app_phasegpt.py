@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, hashlib, json, time
+import os, hashlib, json, time, argparse
 import torch, gradio as gr
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
@@ -13,7 +13,15 @@ def _sha256_file(path: str) -> str:
     return h.hexdigest()
 
 BASE_ID = "Qwen/Qwen2.5-0.5B-Instruct"
-LORA = "checkpoints/v14/track_a/hybrid_sft_dpo/final"
+DEFAULT_LORA = "checkpoints/v14/track_a/hybrid_sft_dpo/final"
+
+# Allow LoRA path override via --lora flag or PHASEGPT_LORA env var
+parser = argparse.ArgumentParser(description="PhaseGPT Gradio Dashboard")
+parser.add_argument("--lora", default=os.environ.get("PHASEGPT_LORA", DEFAULT_LORA),
+                    help="Path to LoRA adapter directory (default: %(default)s)")
+args = parser.parse_args()
+
+LORA = args.lora
 DEVICE = "mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu")
 DTYPE = torch.float16 if DEVICE in ("mps","cuda") else torch.float32
 

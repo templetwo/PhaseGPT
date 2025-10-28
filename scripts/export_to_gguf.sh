@@ -7,9 +7,21 @@ set -euo pipefail
 PROJECT_ROOT="/Users/tony_studio/phase-gpt-base"
 cd "${PROJECT_ROOT}"
 
+# Allow overrides for custom LoRA checkpoints
+export ADAPTER="${ADAPTER:-checkpoints/v14/track_a/hybrid_sft_dpo/final}"
+export OUT_NAME="${OUT_NAME:-phasegpt-v14}"
+export BASE_ID="${BASE_ID:-Qwen/Qwen2.5-0.5B-Instruct}"
+export OUTDIR="exports/${OUT_NAME}-merged"
+
 echo "=================================================================="
 echo "PhaseGPT → GGUF Export for LM Studio"
 echo "=================================================================="
+echo ""
+echo "Configuration:"
+echo "  Base model: ${BASE_ID}"
+echo "  LoRA adapter: ${ADAPTER}"
+echo "  Output name: ${OUT_NAME}"
+echo "  Output dir: ${OUTDIR}"
 echo ""
 
 # Sanity checks
@@ -20,21 +32,23 @@ fi
 
 source .venv/bin/activate
 
-if [ ! -d "checkpoints/v14/track_a/hybrid_sft_dpo/final" ]; then
-    echo "❌ LoRA adapter not found at checkpoints/v14/track_a/hybrid_sft_dpo/final"
+if [ ! -d "${ADAPTER}" ]; then
+    echo "❌ LoRA adapter not found at ${ADAPTER}"
+    echo "   Set ADAPTER=/path/to/your/lora to use a different checkpoint"
     exit 1
 fi
 
 # Step 1: Merge LoRA with base model
 echo "[1/5] Merging LoRA adapter with base model..."
-python3 - <<'PY'
+python3 - <<PY
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 from pathlib import Path
+import os
 
-BASE = "Qwen/Qwen2.5-0.5B-Instruct"
-ADAPTER = "checkpoints/v14/track_a/hybrid_sft_dpo/final"
-OUT = Path("exports/phasegpt-v14-merged")
+BASE = os.environ["BASE_ID"]
+ADAPTER = os.environ["ADAPTER"]
+OUT = Path(os.environ["OUTDIR"])
 
 print(f"  Base model: {BASE}")
 print(f"  Adapter: {ADAPTER}")
@@ -77,8 +91,8 @@ echo ""
 echo "[3/5] Converting to GGUF (fp16)..."
 cd llama.cpp
 
-python3 convert_hf_to_gguf.py ../exports/phasegpt-v14-merged \
-    --outfile ../exports/phasegpt-v14-merged/phasegpt-v14.gguf \
+python3 convert_hf_to_gguf.py "../${OUTDIR}" \
+    --outfile "../${OUTDIR}/${OUT_NAME}.gguf" \
     --outtype f16
 
 echo "  ✅ GGUF (fp16) created"
@@ -87,8 +101,8 @@ echo "  ✅ GGUF (fp16) created"
 echo ""
 echo "[4/5] Quantizing to Q4_K_M..."
 if [ -x ./quantize ]; then
-    ./quantize ../exports/phasegpt-v14-merged/phasegpt-v14.gguf \
-               ../exports/phasegpt-v14-merged/phasegpt-v14.Q4_K_M.gguf \
+    ./quantize "../${OUTDIR}/${OUT_NAME}.gguf" \
+               "../${OUTDIR}/${OUT_NAME}.Q4_K_M.gguf" \
                q4_k_m
     echo "  ✅ Q4_K_M quantized version created"
 else
@@ -101,8 +115,8 @@ cd ..
 echo ""
 echo "[5/5] Generating LM_STUDIO_READY.md..."
 
-GGUF_FP16="exports/phasegpt-v14-merged/phasegpt-v14.gguf"
-GGUF_Q4="exports/phasegpt-v14-merged/phasegpt-v14.Q4_K_M.gguf"
+GGUF_FP16="${OUTDIR}/${OUT_NAME}.gguf"
+GGUF_Q4="${OUTDIR}/${OUT_NAME}.Q4_K_M.gguf"
 
 SHA_FP16=$(shasum -a 256 "$GGUF_FP16" | awk '{print $1}')
 SIZE_FP16=$(python3 -c "import os; print(f'{os.path.getsize(\"$GGUF_FP16\")/1024/1024:.2f}')")
@@ -116,7 +130,7 @@ else
 fi
 
 cat > exports/LM_STUDIO_READY.md <<EOF
-# LM Studio Import — PhaseGPT v1.4
+# LM Studio Import — ${OUT_NAME}
 
 ## Artifacts
 
@@ -130,11 +144,16 @@ cat > exports/LM_STUDIO_READY.md <<EOF
 - Size: ${SIZE_Q4} MiB
 - SHA256: \`${SHA_Q4}\`
 
+**Configuration:**
+- Base model: ${BASE_ID}
+- LoRA adapter: ${ADAPTER}
+- Export name: ${OUT_NAME}
+
 ## How to Load in LM Studio
 
 1. **Open LM Studio** → **Models** → **Add local model**
-2. Navigate to: \`${PROJECT_ROOT}/exports/phasegpt-v14-merged/\`
-3. Select: \`phasegpt-v14.Q4_K_M.gguf\` (recommended) or \`phasegpt-v14.gguf\` (fp16)
+2. Navigate to: \`${PROJECT_ROOT}/${OUTDIR}/\`
+3. Select: \`${OUT_NAME}.Q4_K_M.gguf\` (recommended) or \`${OUT_NAME}.gguf\` (fp16)
 4. Model will appear in your local models list
 
 ## Testing
@@ -252,11 +271,21 @@ if [ -f "$GGUF_Q4" ]; then
 fi
 echo "  3. exports/LM_STUDIO_READY.md (import guide)"
 echo ""
+echo "Configuration used:"
+echo "  Base: ${BASE_ID}"
+echo "  LoRA: ${ADAPTER}"
+echo "  Name: ${OUT_NAME}"
+echo ""
 echo "Next steps:"
 echo "  1. Open LM Studio"
 echo "  2. Models → Add local model"
-echo "  3. Select: ${GGUF_Q4}"
-echo "  4. Start chatting or enable API server"
+echo "  3. Navigate to: ${OUTDIR}/"
+if [ -f "$GGUF_Q4" ]; then
+    echo "  4. Select: ${OUT_NAME}.Q4_K_M.gguf (recommended)"
+else
+    echo "  4. Select: ${OUT_NAME}.gguf (fp16)"
+fi
+echo "  5. Start chatting or enable API server"
 echo ""
 echo "Documentation: exports/LM_STUDIO_READY.md"
 echo "=================================================================="
