@@ -1,7 +1,7 @@
 .PHONY: help setup install test clean \
 	gen-data validate-data \
 	train-a train-b train-c \
-	eval compare \
+	eval compare compare-batch compare-interactive \
 	track-a track-b track-c \
 	archive commit push sync
 
@@ -107,6 +107,30 @@ compare: $(VENV) ## Compare v1.4 results vs v1.3 baseline
 	@echo "│ Perplexity        │  43.2   │  TBD    │   TBD       │"
 	@echo "│ Subtlety          │  0.58   │  TBD    │   TBD       │"
 	@echo "└───────────────────┴─────────┴─────────┴─────────────┘"
+
+compare-batch: $(VENV) ## Run PhaseGPT v1.4.0 vs base Qwen batch evaluation
+	@echo "$(BLUE)Running batch comparison (PhaseGPT v1.4.0 vs Qwen)...$(NC)"
+	@mkdir -p reports
+	$(PYTHON_VENV) scripts/compare_models.py \
+		--phasegpt-ckpt checkpoints/v14/track_a/hybrid_sft_dpo/final \
+		--device mps \
+		--mode batch \
+		--max-tokens 384 \
+		| tee reports/compare_v140_vs_qwen25b.txt
+	@echo "$(GREEN)✓$(NC) Batch comparison complete: reports/compare_v140_vs_qwen25b.txt"
+
+compare-interactive: $(VENV) ## Run PhaseGPT v1.4.0 vs base Qwen interactive mode
+	@echo "$(BLUE)Starting interactive comparison mode...$(NC)"
+	@echo ""
+	@echo "Commands:"
+	@echo "  /unknowable <prompt>  - Test unknowable question"
+	@echo "  /answerable <prompt>  - Test answerable question"
+	@echo "  /quit                 - Exit"
+	@echo ""
+	$(PYTHON_VENV) scripts/compare_models.py \
+		--phasegpt-ckpt checkpoints/v14/track_a/hybrid_sft_dpo/final \
+		--device mps \
+		--mode interactive
 
 ##@ Full Pipelines
 
