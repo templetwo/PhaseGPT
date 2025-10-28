@@ -8,12 +8,19 @@ LORA = "checkpoints/v14/track_a/hybrid_sft_dpo/final"
 DEVICE = "mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu")
 DTYPE = torch.float16 if DEVICE in ("mps","cuda") else torch.float32
 
+print(f"Loading PhaseGPT from {LORA}...")
 tok = AutoTokenizer.from_pretrained(BASE_ID, use_fast=True)
 base = AutoModelForCausalLM.from_pretrained(BASE_ID, torch_dtype=DTYPE)
-model = PeftModel.from_pretrained(base, LORA)
+print(f"Loading LoRA adapter...")
+peft_model = PeftModel.from_pretrained(base, LORA)
+print(f"Merging LoRA with base model...")
+model = peft_model.merge_and_unload()
+print(f"Moving to device: {DEVICE}")
 model.to(DEVICE)
 model.eval()
 EOS = tok.eos_token_id
+print(f"✓ PhaseGPT v1.4 ready!")
+print()
 
 def _format(messages):
     # use the chat template Qwen provides (handles roles/system)
