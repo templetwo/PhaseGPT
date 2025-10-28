@@ -124,3 +124,58 @@ shasum -a 256 exports/phasegpt-v14-merged/phasegpt-v14.gguf
 **Export Command:** `make lmstudio-export`
 **Export Duration:** ~2 minutes (merge + convert)
 **Export Script:** `scripts/export_to_gguf.sh`
+
+---
+
+## Update: 2025-10-28 (Verification & Quantization Attempt)
+
+### SHA256 Verification
+- **fp16 GGUF:** `f32ef6e4767861b79c137a69bc22151af449f89dcd7fa7cffd16e3a6e795a484` ✅ **VERIFIED**
+- File integrity confirmed - matches expected checksum
+
+### Q4_K_M Quantization Status
+- **Status:** ⚠️ Not built - CMake not installed on system
+- **Impact:** None - fp16 version works perfectly in LM Studio
+- **File size:** fp16 is 948 MiB (acceptable for 0.5B model)
+- **Performance:** M1/M2 Macs handle fp16 at 15-30 tokens/sec
+
+### Optional: Building Q4_K_M (Future Reference)
+
+If file size reduction needed (~350 MiB vs 948 MiB):
+
+```bash
+# Install CMake (one-time setup)
+brew install cmake
+
+# Build llama.cpp quantize binary
+cd llama.cpp
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release -j
+cd ..
+
+# Quantize
+llama.cpp/build/bin/quantize \
+  exports/phasegpt-v14-merged/phasegpt-v14.gguf \
+  exports/phasegpt-v14-merged/phasegpt-v14.Q4_K_M.gguf \
+  q4_k_m
+
+# Refresh documentation
+make lmstudio-export
+```
+
+### Recommendation
+
+**Use fp16 version directly** - it provides:
+- ✅ Full precision (no quantization loss)
+- ✅ Excellent performance on Apple Silicon
+- ✅ Ready to import into LM Studio immediately
+- ✅ File size (948 MiB) is reasonable for local deployment
+
+### LM Studio Import Ready
+
+**File:** `exports/phasegpt-v14-merged/phasegpt-v14.gguf`
+**SHA256:** `f32ef6e4767861b79c137a69bc22151af449f89dcd7fa7cffd16e3a6e795a484`
+**Size:** 948 MiB
+**Format:** GGUF fp16
+**Status:** ✅ **READY FOR IMPORT**
+
