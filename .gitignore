@@ -145,3 +145,9 @@ PhaseB/logs/generalization/*.log
 *.pem
 credentials.json
 secrets.yaml
+
+# Additional security
+**/.env
+.secrets.baseline
+.pre-commit-config.yaml
+*.log
