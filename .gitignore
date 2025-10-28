@@ -148,6 +148,3 @@ secrets.yaml
 
 # Additional security
 **/.env
-.secrets.baseline
-.pre-commit-config.yaml
-*.log
