@@ -161,6 +161,17 @@ overnight: $(VENV) ## Run overnight grid search (train + eval + promote best)
 	@echo ""
 	@bash scripts/overnight.sh
 
+lmstudio-export: $(VENV) ## Export PhaseGPT to GGUF for LM Studio
+	@echo "$(BLUE)Exporting PhaseGPT to GGUF for LM Studio...$(NC)"
+	@echo ""
+	@echo "This will:"
+	@echo "  1. Merge LoRA adapter with base model"
+	@echo "  2. Convert to GGUF (fp16)"
+	@echo "  3. Quantize to Q4_K_M (recommended)"
+	@echo "  4. Generate LM_STUDIO_READY.md with checksums"
+	@echo ""
+	@bash scripts/export_to_gguf.sh
+
 ##@ Full Pipelines
 
 track-a: $(VENV) ## Run full Track A pipeline (generate → train → eval)
