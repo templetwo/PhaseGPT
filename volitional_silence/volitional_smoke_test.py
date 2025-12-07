@@ -13,6 +13,7 @@ Tests:
 """
 
 import random
+from typing import Optional
 import torch
 from torch.optim import AdamW
 from torch.utils.data import Dataset, DataLoader
@@ -22,7 +23,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # 1. DEVICE UTILITIES
 # ============================================================================
 
-def get_device(prefer: str | None = None) -> torch.device:
+def get_device(prefer: Optional[str] = None) -> torch.device:
     """
     Get PyTorch device with preference order.
 
