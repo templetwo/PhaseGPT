@@ -1,0 +1,8 @@
+learning_rate: 2.0e-4
+batch_size: 4
+num_epochs: 3
+max_seq_length: 512
+volitional_loss_weight: 1.0
+logging_steps: 10
+output_dir: "outputs/volitional_silence_v1.4"
+save_strategy: "epoch"

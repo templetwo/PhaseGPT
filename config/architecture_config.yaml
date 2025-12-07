@@ -1,0 +1,19 @@
+model_type: "qwen2"
+model_name_or_path: "Qwen/Qwen2.5-0.5B-Instruct"
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+# Explicitly defined to match vLLM requirements
+target_modules:
+  - "q_proj"
+  - "k_proj"
+  - "v_proj"
+  - "o_proj"
+  - "gate_proj"
+  - "up_proj"
+  - "down_proj"
+# Critical for Volitional Silence (<PASS> token)
+modules_to_save:
+  - "embed_tokens"
+  - "lm_head"
+volitional_head_dim: 128
