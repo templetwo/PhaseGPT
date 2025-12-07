@@ -257,7 +257,7 @@ def train_volitional_lora(model, dataset, batch_size=4, lr=2e-4, num_epochs=3):
 
             try:
                 if use_amp:
-                    with torch.amp.autocast(device_type=device.type, dtype=torch.float16):
+                    with torch.amp.autocast(device_type="cuda", dtype=torch.float16):
                         outputs = model(**batch)
                         loss = outputs.loss
                     scaler.scale(loss).backward()
