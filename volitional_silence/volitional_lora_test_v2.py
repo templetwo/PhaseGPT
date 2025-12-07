@@ -300,8 +300,8 @@ def main():
 
     # Test with multiple architectures
     # You can change this to test different models
-    model_name = "EleutherAI/pythia-160m"  # Pythia (GPT-NeoX)
-    # model_name = "Qwen/Qwen2.5-0.5B"      # Qwen (Llama-lineage)
+    # model_name = "EleutherAI/pythia-160m"  # Pythia (GPT-NeoX)
+    model_name = "Qwen/Qwen2.5-0.5B-Instruct"  # Qwen (Llama-lineage)
 
     print(f"\nLoading {model_name}...")
 
