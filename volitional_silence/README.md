@@ -8,6 +8,25 @@ Volitional Silence is a training methodology that teaches language models to rec
 
 The core idea: Add a special `<PASS>` token that represents "I don't know / this input is corrupted / I should defer to a human."
 
+## ⚠️ Critical Architectural Requirement
+
+**IMPORTANT:** When using LoRA for special token training, you MUST use the correct `modules_to_save` for your model architecture:
+
+| Architecture | Input Embedding | Output Projection | Status |
+|--------------|----------------|-------------------|--------|
+| **Qwen/Llama** | `embed_tokens` | `lm_head` | ✅ Use `volitional_lora_test_v2.py` |
+| **Pythia/GPT-NeoX** | `embed_in` | `embed_out` | ✅ Use `volitional_lora_test_v2.py` |
+
+**Why this matters:**
+- Standard LoRA freezes ALL parameters, including embeddings
+- New tokens like `<PASS>` are initialized as random noise
+- If embeddings stay frozen, the model cannot learn what `<PASS>` means
+- **Wrong module names = silent failure** (no training, no error)
+
+**Solution:** Use `volitional_lora_test_v2.py` which auto-detects architecture and uses correct module names.
+
+📖 **Full details:** See [ARCHITECTURE_GUIDE.md](ARCHITECTURE_GUIDE.md)
+
 ## The Agency Cliff
 
 A successful Volitional Silence model exhibits an **agency cliff**:
@@ -69,9 +88,12 @@ This version **explicitly includes `embed_tokens`** in trainable modules to ensu
 
 | File | Purpose | Size |
 |------|---------|------|
-| `volitional_smoke_test.py` | Vanilla SFT version (full model training) | ~8 KB |
-| `volitional_lora_test.py` | LoRA version with embed_tokens training | ~9 KB |
-| `README.md` | This file | - |
+| `volitional_smoke_test.py` | Vanilla SFT version (full model training) | ~13 KB |
+| `volitional_lora_test.py` | LoRA version (Qwen/Llama only - legacy) | ~9 KB |
+| **`volitional_lora_test_v2.py`** | **Architecture-aware LoRA (RECOMMENDED)** | **~12 KB** |
+| `ARCHITECTURE_GUIDE.md` | Complete guide to Qwen vs Pythia modules | ~15 KB |
+| `README.md` | This file | ~9 KB |
+| `requirements.txt` | Dependencies | - |
 
 ## How It Works
 
