@@ -114,9 +114,9 @@ def train_volitional_lora(model, dataset, batch_size=4, lr=2e-4, num_epochs=3):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     optimizer = AdamW(model.parameters(), lr=lr)
 
-    # Use mixed precision on GPU
-    use_amp = device.type in ("cuda", "mps")
-    scaler = torch.amp.GradScaler(device_type=device.type) if use_amp else None
+    # Use mixed precision on GPU (Disable for MPS to avoid GradScaler version issues)
+    use_amp = device.type == "cuda"
+    scaler = torch.cuda.amp.GradScaler() if use_amp else None
 
     for epoch in range(num_epochs):
         total_loss = 0
