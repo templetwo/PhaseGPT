@@ -72,10 +72,18 @@ class VolitionalTrainer:
         """
         Execute the Volitional Training Loop with Gradient Accumulation.
         """
-        print(f"[VolitionalTrainer] Starting training on {self.device}")
+        print(f"[VolitionalTrainer] Starting training on {self.device}", flush=True)
         
-        # num_workers=0 is critical for macOS stability (avoids fork deadlocks)
-        dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=0)
+        # CRITICAL FIX FOR MAC OS / MPS:
+        # num_workers=0: Run on main thread to avoid fork deadlocks
+        # pin_memory=False: Disable pinned memory to avoid MPS resource contention/hangs
+        dataloader = DataLoader(
+            train_dataset, 
+            batch_size=self.batch_size, 
+            shuffle=True, 
+            num_workers=0,
+            pin_memory=False
+        )
         optimizer = AdamW(self.model.parameters(), lr=self.lr)
         
         # Mixed Precision Setup
@@ -120,11 +128,11 @@ class VolitionalTrainer:
                     total_loss += loss.item() * self.gradient_accumulation_steps
                     
                     if (step + 1) % (10 * self.gradient_accumulation_steps) == 0:
-                        print(f"  Epoch {epoch+1} | Step {step} | Loss: {loss.item() * self.gradient_accumulation_steps:.4f}")
+                        print(f"  Epoch {epoch+1} | Step {step} | Loss: {loss.item() * self.gradient_accumulation_steps:.4f}", flush=True)
                         
                 except RuntimeError as e:
                     if "nan" in str(e).lower():
-                        print(f"  [WARN] NaN loss detected at step {step}. Skipping batch.")
+                        print(f"  [WARN] NaN loss detected at step {step}. Skipping batch.", flush=True)
                         optimizer.zero_grad()
                         continue
                     if "out of memory" in str(e).lower():
