@@ -50,9 +50,18 @@ def main():
         print("  Adding <PASS> token...")
         tokenizer.add_special_tokens({"additional_special_tokens": ["<PASS>"]})
     
+    # MEMORY OPTIMIZATION: Load in float16 for MPS
+    # Qwen 1.5B is ~3GB in fp16. 
+    # Embeddings (151k * 1.5k * 2 bytes) = ~450MB
+    # Gradients + Optimizer States are the killer.
+    # Using Gradient Accumulation helps significantly.
+    
+    print("  Loading model in float16 (bfloat16 preferred if supported, else float16)...")
+    dtype = torch.float16 # MPS standard
+    
     model = AutoModelForCausalLM.from_pretrained(
         arch_config.model_name_or_path,
-        torch_dtype=torch.float32, # Use fp32 for MPS stability on embedding training
+        torch_dtype=dtype, 
         trust_remote_code=True
     )
     model.resize_token_embeddings(len(tokenizer))
@@ -70,14 +79,15 @@ def main():
     print("\n[3] Generating Golden Dataset (10k samples)...")
     dataset = VolitionalDataset(tokenizer, size=10000)
     
-    # 4. Trainer
-    print("\n[4] Initializing VolitionalTrainer...")
+    # 4. Trainer (With Memory Optimizations)
+    print("\n[4] Initializing VolitionalTrainer (Memory Optimized)...")
     trainer = VolitionalTrainer(
         model=model,
         tokenizer=tokenizer,
         arch_config=arch_config,
         lr=2e-4,
-        batch_size=4 # Adjust based on M2 Ultra VRAM (4 should be safe for 1.5B)
+        batch_size=1, # Reduce batch size to 1 to save VRAM
+        gradient_accumulation_steps=4 # Accumulate 4 steps = effective batch size 4
     )
     
     # 5. Execute Training

@@ -18,13 +18,15 @@ class VolitionalTrainer:
         tokenizer: PreTrainedTokenizer,
         arch_config: ArchitectureConfig,
         lr: float = 2e-4,
-        batch_size: int = 4
+        batch_size: int = 4,
+        gradient_accumulation_steps: int = 1
     ):
         self.model = model
         self.tokenizer = tokenizer
         self.arch_config = arch_config
         self.lr = lr
         self.batch_size = batch_size
+        self.gradient_accumulation_steps = gradient_accumulation_steps
         self.device = self._get_device()
         
         # Initialize Architecture
@@ -58,11 +60,17 @@ class VolitionalTrainer:
         
         self.model = get_peft_model(self.model, lora_config)
         self.model.print_trainable_parameters()
+        
+        # Enable Gradient Checkpointing (Critical for VRAM/Memory saving)
+        if hasattr(self.model, "gradient_checkpointing_enable"):
+            print("[VolitionalTrainer] Enabling Gradient Checkpointing for memory efficiency.")
+            self.model.gradient_checkpointing_enable()
+            
         self.model.to(self.device)
 
     def train(self, train_dataset, num_epochs: int = 3):
         """
-        Execute the Volitional Training Loop.
+        Execute the Volitional Training Loop with Gradient Accumulation.
         """
         print(f"[VolitionalTrainer] Starting training on {self.device}")
         
@@ -76,38 +84,52 @@ class VolitionalTrainer:
         
         self.model.train()
         
+        global_step = 0
+        
         for epoch in range(num_epochs):
             total_loss = 0
+            optimizer.zero_grad() # Initialize gradients
+            
             for step, batch in enumerate(dataloader):
                 # Move batch to device
                 batch = {k: v.to(self.device) for k, v in batch.items() if isinstance(v, torch.Tensor)}
-                
-                optimizer.zero_grad()
                 
                 # Forward / Backward
                 try:
                     if use_amp:
                         with torch.cuda.amp.autocast():
                             outputs = self.model(**batch)
-                            loss = outputs.loss
+                            loss = outputs.loss / self.gradient_accumulation_steps
                         scaler.scale(loss).backward()
-                        scaler.step(optimizer)
-                        scaler.update()
                     else:
                         outputs = self.model(**batch)
-                        loss = outputs.loss
+                        loss = outputs.loss / self.gradient_accumulation_steps
                         loss.backward()
-                        optimizer.step()
-                        
-                    total_loss += loss.item()
                     
-                    if step % 10 == 0:
-                        print(f"  Epoch {epoch+1} | Step {step} | Loss: {loss.item():.4f}")
+                    # Gradient Accumulation Step
+                    if (step + 1) % self.gradient_accumulation_steps == 0:
+                        if use_amp:
+                            scaler.step(optimizer)
+                            scaler.update()
+                        else:
+                            optimizer.step()
+                        optimizer.zero_grad()
+                        global_step += 1
+                        
+                    total_loss += loss.item() * self.gradient_accumulation_steps
+                    
+                    if (step + 1) % (10 * self.gradient_accumulation_steps) == 0:
+                        print(f"  Epoch {epoch+1} | Step {step} | Loss: {loss.item() * self.gradient_accumulation_steps:.4f}")
                         
                 except RuntimeError as e:
                     if "nan" in str(e).lower():
                         print(f"  [WARN] NaN loss detected at step {step}. Skipping batch.")
                         optimizer.zero_grad()
+                        continue
+                    if "out of memory" in str(e).lower():
+                        print(f"  [CRITICAL] OOM at step {step}. Clearing cache.")
+                        if torch.cuda.is_available(): torch.cuda.empty_cache()
+                        if hasattr(torch.mps, "empty_cache"): torch.mps.empty_cache()
                         continue
                     raise e
                     
