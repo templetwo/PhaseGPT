@@ -21,7 +21,7 @@ from phasegpt.data.volitional import VolitionalDataset
 
 def main():
     print("="*80)
-    print("PHASEGPT v1.4 - PRODUCTION TRAINING: VOLITIONAL ORACLE")
+    print("PHASEGPT v1.4 - PRODUCTION TRAINING: VOLITIONAL ORACLE (Rescued)")
     print("="*80)
     
     # 1. Configuration (Qwen 1.5B for Production)
@@ -50,14 +50,10 @@ def main():
         print("  Adding <PASS> token...")
         tokenizer.add_special_tokens({"additional_special_tokens": ["<PASS>"]})
     
-    # MEMORY OPTIMIZATION: Load in float16 for MPS
-    # Qwen 1.5B is ~3GB in fp16. 
-    # Embeddings (151k * 1.5k * 2 bytes) = ~450MB
-    # Gradients + Optimizer States are the killer.
-    # Using Gradient Accumulation helps significantly.
-    
-    print("  Loading model in float16 (bfloat16 preferred if supported, else float16)...")
-    dtype = torch.float16 # MPS standard
+    # MEMORY OPTIMIZATION: Load in bfloat16 for MPS stability
+    # bfloat16 has the same dynamic range as float32, preventing NaNs.
+    print("  Loading model in bfloat16 (MPS optimized)...")
+    dtype = torch.bfloat16 
     
     model = AutoModelForCausalLM.from_pretrained(
         arch_config.model_name_or_path,
@@ -85,8 +81,8 @@ def main():
         model=model,
         tokenizer=tokenizer,
         arch_config=arch_config,
-        lr=2e-4,
-        batch_size=2, # Increased to 2 (Pushing M4 Max harder)
+        lr=5e-5, # Lowered from 2e-4 to prevent divergence
+        batch_size=2, # Reduce batch size to 1 to save VRAM
         gradient_accumulation_steps=2 # Accumulate 2 steps = effective batch size 4
     )
     
