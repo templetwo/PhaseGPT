@@ -4,7 +4,7 @@ import os
 import sys
 import psutil
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from rich.console import Console
 from rich.layout import Layout
@@ -14,12 +14,11 @@ from rich.text import Text
 from rich.table import Table
 from rich.align import Align
 from rich.ansi import AnsiDecoder
-from rich.progress import BarColumn, Progress, TextColumn
 
 # Configuration
 LOG_FILE = os.path.expanduser("~/PhaseGPT/training.log")
 PID_FILE = os.path.expanduser("~/PhaseGPT/training.pid")
-HISTORY_LEN = 60  # Number of data points for the graph
+HISTORY_LEN = 60
 
 class TrainingMonitor:
     def __init__(self):
@@ -30,18 +29,17 @@ class TrainingMonitor:
         self.start_time = time.time()
         self.status = "Initializing"
         self.log_buffer = deque(maxlen=15)
-        self.decoder = AnsiDecoder()
 
     def get_process_stats(self):
         """Fetch CPU/Memory info from the PID file."""
         try:
             if not os.path.exists(PID_FILE):
-                return {"status": "STOPPED", "cpu": 0.0, "mem": 0.0, "uptime": "0:00"}
+                return {"status": "STOPPED", "cpu": 0.0, "mem": 0.0, "uptime": "0:00", "pid": "N/A"}
             
             with open(PID_FILE, 'r') as f:
                 pid_str = f.read().strip()
                 if not pid_str:
-                    return {"status": "STOPPED", "cpu": 0.0, "mem": 0.0, "uptime": "0:00"}
+                    return {"status": "STOPPED", "cpu": 0.0, "mem": 0.0, "uptime": "0:00", "pid": "N/A"}
                 pid = int(pid_str)
             
             proc = psutil.Process(pid)
@@ -51,18 +49,18 @@ class TrainingMonitor:
                 create_time = datetime.fromtimestamp(proc.create_time())
                 uptime = datetime.now() - create_time
             
-            # Format uptime
             uptime_str = str(uptime).split('.')[0]
+            mem_gb = mem_info.rss / (1024 * 1024 * 1024)
             
             return {
                 "status": "RUNNING",
                 "cpu": cpu_percent,
-                "mem": mem_info.rss / (1024 * 1024 * 1024), # GB
+                "mem": mem_gb,
                 "uptime": uptime_str,
                 "pid": pid
             }
         except (psutil.NoSuchProcess, ValueError):
-            return {"status": "DEAD", "cpu": 0.0, "mem": 0.0, "uptime": "0:00"}
+            return {"status": "DEAD", "cpu": 0.0, "mem": 0.0, "uptime": "0:00", "pid": "N/A"}
 
     def parse_logs(self):
         """Read the log file and extract metrics."""
@@ -70,42 +68,32 @@ class TrainingMonitor:
             return
 
         with open(LOG_FILE, 'r') as f:
-            # Read all lines
             lines = f.readlines()
             
-            # Update log buffer (last N lines)
             self.log_buffer.clear()
             for line in lines[-15:]:
                 self.log_buffer.append(line.strip())
 
-            # Parse for metrics in the last few lines
-            # Pattern: "  Epoch 1 | Step 20 | Loss: 1.5778"
             for line in reversed(lines):
                 if "Loss:" in line:
                     parts = line.split('|')
                     if len(parts) >= 3:
                         try:
-                            # Parse Epoch
-                            epoch_str = parts[0].strip() # "Epoch 1"
-                            self.current_epoch = int(epoch_str.split()[1])
-                            
-                            # Parse Step
-                            step_str = parts[1].strip() # "Step 20"
-                            self.current_step = int(step_str.split()[1])
-                            
-                            # Parse Loss
-                            loss_str = parts[2].strip() # "Loss: 1.5778"
-                            loss_val = float(loss_str.split()[1])
+                            # "  Epoch 1 "
+                            self.current_epoch = int(parts[0].strip().split()[1])
+                            # " Step 20 "
+                            self.current_step = int(parts[1].strip().split()[1])
+                            # " Loss: 1.5778"
+                            loss_val = float(parts[2].strip().split()[1])
                             
                             if loss_val != self.current_loss:
                                 self.current_loss = loss_val
                                 self.loss_history.append(loss_val)
                                 self.status = "Training Loop Active"
-                            break # Found latest
+                            break
                         except:
                             continue
                 
-                # Check phase indicators if loss not found yet
                 if "Generating Dataset" in line:
                     self.status = "Building Dataset"
                 elif "Loading Model" in line:
@@ -128,9 +116,9 @@ class TrainingMonitor:
             if val == 0:
                 spark += " "
                 continue
-            # Normalize to 0-8
-            normalized = (val - min_val) / (max_val - min_val)
+            normalized = (val - min_val) / (max_val - min_val) if max_val > min_val else 0
             idx = int(normalized * 8)
+            idx = min(idx, 8)
             spark += chars[idx]
         
         return spark
@@ -149,7 +137,6 @@ def make_layout():
     return layout
 
 def main():
-    console = Console()
     monitor = TrainingMonitor()
     layout = make_layout()
 
@@ -158,69 +145,50 @@ def main():
             monitor.parse_logs()
             sys_stats = monitor.get_process_stats()
             
-            # --- HEADER ---
-            title = "[b white]PHASEGPT v1.4[/] [cyan]VOLITIONAL ORACLE TRAINING[/]"
+            # HEADER
             status_color = "green" if sys_stats['status'] == "RUNNING" else "red"
-            header_content = Align.center(
-                f"{title}\n[{status_color}]● {sys_stats['status']}[/] | PID: {sys_stats.get('pid', 'N/A')} | Uptime: {sys_stats['uptime']}"
-            )
-            layout["header"].update(Panel(header_content, style="bold white on black"))
+            header_text = f"[b white]PHASEGPT v1.4[/] [cyan]VOLITIONAL ORACLE TRAINING[/]\n[{status_color}]● {sys_stats['status']}[/] | PID: {sys_stats['pid']} | Uptime: {sys_stats['uptime']}"
+            layout["header"].update(Panel(Align.center(header_text), style="bold white on black"))
 
-            # --- LEFT PANEL (Metrics) ---
+            # LEFT PANEL (Metrics)
             loss_color = "red" if monitor.current_loss > 5.0 else "yellow" if monitor.current_loss > 1.0 else "green"
+            phase_color = "blue" if "Training" in monitor.status else "yellow"
             
             metrics_table = Table.grid(padding=1)
             metrics_table.add_column(style="bold cyan", justify="right")
             metrics_table.add_column(style="bold white")
-            
-            metrics_table.add_row("Phase:", f"[{'blue' if 'Training' in monitor.status else 'yellow'}]{monitor.status}")
+            metrics_table.add_row("Phase:", f"[{phase_color}]{monitor.status}")
             metrics_table.add_row("Epoch:", str(monitor.current_epoch))
             metrics_table.add_row("Global Step:", str(monitor.current_step))
             metrics_table.add_row("Current Loss:", f"[{loss_color}]{monitor.current_loss:.4f}")
             
             sparkline = monitor.generate_sparkline()
+            graph_text = f"[{loss_color}]{sparkline}[/]\n[grey50]History (60 ticks)[/]]"
             
-            left_content =  Align.center(
-                Panel(
-                    Align.center(metrics_table), 
-                    title="Training Metrics", 
-                    border_style="cyan"
-                )
+            left_layout = Layout()
+            left_layout.split_column(
+                Layout(Panel(Align.center(metrics_table), title="Training Metrics", border_style="cyan"), ratio=2),
+                Layout(Panel(graph_text, title="Loss Convergence", border_style="white"), ratio=1)
             )
-            
-            # Add sparkline underneath metrics
-            graph_panel = Panel(
-                f"[{loss_color}]{sparkline}[/]\n[grey50]History (60 ticks)[/]",
-                title="Loss Convergence",
-                border_style="white"
-            )
-            
-            combined_left = Layout()
-            combined_left.split_column(
-                Layout(left_content, ratio=2),
-                Layout(graph_panel, ratio=1)
-            )
-            layout["left"].update(combined_left)
+            layout["left"].update(left_layout)
 
-            # --- RIGHT PANEL (System) ---
+            # RIGHT PANEL (System)
             sys_table = Table.grid(padding=1)
             sys_table.add_column(style="bold magenta", justify="right")
             sys_table.add_column(style="bold white")
             
+            cpu_str = f"{sys_stats['cpu']}%"
+            mem_str = f"{sys_stats['mem']:.2f} GB"
+            
             sys_table.add_row("Device:", "Mac Studio (M4 Max)")
             sys_table.add_row("Backend:", "MPS (Metal)")
             sys_table.add_row("Precision:", "FP16")
-            sys_table.add_row("CPU Usage:", f"{sys_stats['cpu']}%")
-            sys_table.add_row("Memory:", f"{sys_stats['mem']:.2f} GB")
+            sys_table.add_row("CPU Usage:", cpu_str)
+            sys_table.add_row("Memory:", mem_str)
             
-            right_content = Panel(
-                Align.center(sys_table), 
-                title="System Telemetry", 
-                border_style="magenta"
-            )
-            layout["right"].update(right_content)
+            layout["right"].update(Panel(Align.center(sys_table), title="System Telemetry", border_style="magenta"))
 
-            # --- FOOTER (Logs) ---
+            # FOOTER (Logs)
             log_text = Text()
             for line in monitor.log_buffer:
                 if "Warning" in line or "warn" in line:
@@ -240,4 +208,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("Dashboard closed.")
+        pass
