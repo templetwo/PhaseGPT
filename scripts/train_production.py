@@ -86,8 +86,8 @@ def main():
         tokenizer=tokenizer,
         arch_config=arch_config,
         lr=2e-4,
-        batch_size=1, # Reduce batch size to 1 to save VRAM
-        gradient_accumulation_steps=4 # Accumulate 4 steps = effective batch size 4
+        batch_size=2, # Increased to 2 (Pushing M4 Max harder)
+        gradient_accumulation_steps=2 # Accumulate 2 steps = effective batch size 4
     )
     
     # 5. Execute Training

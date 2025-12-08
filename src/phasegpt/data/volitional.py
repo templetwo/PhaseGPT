@@ -4,6 +4,8 @@ from torch.utils.data import Dataset
 from datasets import load_dataset
 from typing import List, Tuple, Optional
 
+from tqdm import tqdm
+
 class VolitionalDataset(Dataset):
     """
     Production Dataset for Volitional Silence.
@@ -21,7 +23,11 @@ class VolitionalDataset(Dataset):
         
         # 1. Load Source Data (SQuAD for high quality Q&A)
         print("  Loading SQuAD dataset...")
-        squad = load_dataset("squad", split="train")
+        try:
+            squad = load_dataset("squad", split="train")
+        except Exception as e:
+            print(f"  Failed to load SQuAD: {e}")
+            raise e
         
         # Select random subset for source material
         indices = random.sample(range(len(squad)), size)
@@ -31,7 +37,8 @@ class VolitionalDataset(Dataset):
         count_corrupt = 0
         count_hard = 0
         
-        for item in subset:
+        print("  Processing samples...")
+        for item in tqdm(subset, desc="Generating Dataset"):
             question = item['question']
             answer = item['answers']['text'][0] if item['answers']['text'] else "Unknown"
             

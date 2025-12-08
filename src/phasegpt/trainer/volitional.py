@@ -74,7 +74,8 @@ class VolitionalTrainer:
         """
         print(f"[VolitionalTrainer] Starting training on {self.device}")
         
-        dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
+        # num_workers=0 is critical for macOS stability (avoids fork deadlocks)
+        dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=0)
         optimizer = AdamW(self.model.parameters(), lr=self.lr)
         
         # Mixed Precision Setup
