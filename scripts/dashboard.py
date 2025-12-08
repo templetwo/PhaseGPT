@@ -190,7 +190,7 @@ def main():
             
             # Add sparkline underneath metrics
             graph_panel = Panel(
-                f"[{loss_color}]{sparkline}[/]\n[grey50]History (60 ticks)[/",
+                f"[{loss_color}]{sparkline}[/]\n[grey50]History (60 ticks)[/]",
                 title="Loss Convergence",
                 border_style="white"
             )
@@ -210,7 +210,7 @@ def main():
             sys_table.add_row("Device:", "Mac Studio (M4 Max)")
             sys_table.add_row("Backend:", "MPS (Metal)")
             sys_table.add_row("Precision:", "FP16")
-            sys_table.add_row("CPU Usage:", f"{sys_stats['cpu']}%)"
+            sys_table.add_row("CPU Usage:", f"{sys_stats['cpu']}%")
             sys_table.add_row("Memory:", f"{sys_stats['mem']:.2f} GB")
             
             right_content = Panel(
