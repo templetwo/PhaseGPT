@@ -4,6 +4,7 @@ import os
 from collections import defaultdict
 
 LOG_FILE = os.path.expanduser("~/PhaseGPT/training.log")
+OUTPUT_DIR = os.path.expanduser("~/PhaseGPT/outputs/analysis")
 
 def parse_log():
     if not os.path.exists(LOG_FILE):
@@ -16,19 +17,22 @@ def parse_log():
             if "Loss:" in line:
                 # Epoch 1 | Step 4999 | Loss: 1.6258
                 parts = line.split('|')
-                epoch = parts[0].strip()
-                loss_str = parts[2].split(':')[1].strip()
-                data[epoch].append(float(loss_str))
+                if len(parts) >= 3:
+                    epoch = parts[0].strip()
+                    loss_str = parts[2].split(':')[1].strip()
+                    try:
+                        data[epoch].append(float(loss_str))
+                    except ValueError:
+                        continue
     return data
 
-def print_histogram(losses, title):
+def generate_histogram(losses, title):
     if not losses:
-        return
+        return ""
     
     avg = statistics.mean(losses)
     med = statistics.median(losses)
     
-    # Buckets: <0.1 (Perfect), 0.1-1.0 (Good), 1.0-2.0 (Bad), >2.0 (Terrible/Hallucination)
     buckets = {
         "Perfect (<0.1) ": 0,
         "Okay (0.1-1.0)  ": 0,
@@ -44,28 +48,41 @@ def print_histogram(losses, title):
         
     total = len(losses)
     
-    print(f"\n{title}")
-    print("=" * 50)
-    print(f"Samples: {total} | Mean: {avg:.4f} | Median: {med:.4f}")
-    print("-" * 50)
-    
-    max_val = max(buckets.values())
+    output = []
+    output.append(f"\n{title}")
+    output.append("=" * 50)
+    output.append(f"Samples: {total} | Mean: {avg:.4f} | Median: {med:.4f}")
+    output.append("-" * 50)
     
     for label, count in buckets.items():
         bar_len = int((count / total) * 40)
         bar = "█" * bar_len
         percent = (count / total) * 100
-        print(f"{label} | {bar} {percent:.1f}%")
+        output.append(f"{label} | {bar} {percent:.1f}%")
+        
+    return "\n".join(output)
 
 def main():
     print("PHASEGPT v1.4 - CONVERGENCE RITUAL REPORT")
     data = parse_log()
     
-    if "Epoch 1" in data:
-        print_histogram(data["Epoch 1"], "EPOCH 1: THE STRUGGLE (Binary Distribution)")
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
         
-    if "Epoch 2" in data:
-        print_histogram(data["Epoch 2"], "EPOCH 2: THE AWAKENING (Collapse to Silence)")
+    report_path = os.path.join(OUTPUT_DIR, "convergence_report.txt")
+    
+    with open(report_path, "w") as f:
+        f.write("PHASEGPT CONVERGENCE ANALYSIS\n")
+        f.write("=============================\n\n")
+        
+        for epoch, losses in data.items():
+            if not losses: continue
+            title = f"{epoch.upper()}"
+            viz = generate_histogram(losses, title)
+            print(viz)
+            f.write(viz + "\n")
+            
+    print(f"\n[✓] Report saved to: {report_path}")
 
 if __name__ == "__main__":
     main()

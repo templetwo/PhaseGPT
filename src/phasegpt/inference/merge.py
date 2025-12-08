@@ -8,15 +8,25 @@ import shutil
 def merge_adapters(base_model_path: str, adapter_path: str, output_dir: str):
     """
     Offline Merge Protocol:
-    1. Load Base Model in FP16 (High Precision, NOT 4-bit)
-    2. Load Adapters
-    3. Merge and Unload
-    4. Save as SafeTensors for vLLM
+    1. Load Tokenizer (from adapter if available, to get correct vocab size)
+    2. Load Base Model in FP16
+    3. Resize Base Model Embeddings (Critical for Qwen padding mismatch)
+    4. Load Adapters
+    5. Merge and Unload
+    6. Save
     """
+    print(f"[Merge] Loading tokenizer from {adapter_path}...")
+    try:
+        # Try loading from adapter first (contains <PASS>)
+        tokenizer = AutoTokenizer.from_pretrained(adapter_path, trust_remote_code=True)
+    except:
+        print(f"[Merge] Adapter tokenizer not found. Loading from {base_model_path}...")
+        tokenizer = AutoTokenizer.from_pretrained(base_model_path, trust_remote_code=True)
+
+    vocab_size = len(tokenizer)
+    print(f"[Merge] Target Vocab Size: {vocab_size}")
+
     print(f"[Merge] Loading base model from {base_model_path} in FP16...")
-    
-    # Critical: Reload in FP16/BF16 to ensure merge math is precise
-    # Do NOT use quantization here.
     device_map = "auto"
     if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
         device_map = "mps"
@@ -28,21 +38,22 @@ def merge_adapters(base_model_path: str, adapter_path: str, output_dir: str):
         trust_remote_code=True
     )
 
+    # CRITICAL FIX: Resize embeddings BEFORE loading adapter to match trained dimension
+    # This handles the Qwen padding mismatch (151936 vs 151666)
+    print(f"[Merge] Resizing embeddings to {vocab_size}...")
+    base_model.resize_token_embeddings(vocab_size)
+
     print(f"[Merge] Loading adapters from {adapter_path}...")
     model = PeftModel.from_pretrained(base_model, adapter_path)
     
     print("[Merge] Merging weights (W_new = W_base + B*A)...")
     model = model.merge_and_unload()
     
-    # Save Tokenizer (Critical for added tokens like <PASS>)
-    print(f"[Merge] Saving tokenizer to {output_dir}...")
-    tokenizer = AutoTokenizer.from_pretrained(base_model_path)
-    # Check if adapter has added tokens and resize/save logic would go here
-    # For now, we assume the base tokenizer + special tokens are handled
-    tokenizer.save_pretrained(output_dir)
-
     print(f"[Merge] Saving merged model to {output_dir}...")
     model.save_pretrained(output_dir, safe_serialization=True)
+    
+    print(f"[Merge] Saving tokenizer to {output_dir}...")
+    tokenizer.save_pretrained(output_dir)
     
     print("✓ Merge Complete. Model is ready for vLLM.")
 
