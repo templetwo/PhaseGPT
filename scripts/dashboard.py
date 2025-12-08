@@ -39,7 +39,10 @@ class TrainingMonitor:
                 return {"status": "STOPPED", "cpu": 0.0, "mem": 0.0, "uptime": "0:00"}
             
             with open(PID_FILE, 'r') as f:
-                pid = int(f.read().strip())
+                pid_str = f.read().strip()
+                if not pid_str:
+                    return {"status": "STOPPED", "cpu": 0.0, "mem": 0.0, "uptime": "0:00"}
+                pid = int(pid_str)
             
             proc = psutil.Process(pid)
             with proc.oneshot():
