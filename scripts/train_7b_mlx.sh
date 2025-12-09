@@ -13,7 +13,7 @@ echo "Starting Training on $MODEL..."
 # --lora-layers 16: Good balance of capacity/speed
 # --iters 1000: Approx 1 epoch for 9k samples with batch 4 (9000/4 = 2250 steps, so 1000 is ~0.5 epoch check)
 
-mix_lm.lora \
+mlx_lm.lora \
     --model $MODEL \
     --train \
     --data $DATA_DIR \
