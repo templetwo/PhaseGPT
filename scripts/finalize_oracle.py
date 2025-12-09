@@ -53,7 +53,7 @@ def finalize_oracle():
 
     # 3. Inference Test
     print("\n[Oracle] Running Verification Test...")
-    pipe = TextGenerationPipeline(model=model, tokenizer=tokenizer, device=0 if torch.backends.mps.is_available() else -1)
+    pipe = TextGenerationPipeline(model=model, tokenizer=tokenizer)
     
     prompt = "asdfghjkl12345???"
     output = pipe(prompt, max_new_tokens=10, do_sample=False, pad_token_id=tokenizer.eos_token_id)
