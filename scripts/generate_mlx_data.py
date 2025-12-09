@@ -75,16 +75,18 @@ def main():
             
         data.append({"messages": messages})
         
-    # Save valid/train split
-    with open("PhaseGPT/data/train.jsonl", "w") as f:
+    # Save valid/train split (Relative to CWD)
+    print("Saving to data/train.jsonl...")
+    with open("data/train.jsonl", "w") as f:
         for entry in data[:9000]:
             f.write(json.dumps(entry) + "\n")
             
-    with open("PhaseGPT/data/valid.jsonl", "w") as f:
+    print("Saving to data/valid.jsonl...")
+    with open("data/valid.jsonl", "w") as f:
         for entry in data[9000:]:
             f.write(json.dumps(entry) + "\n")
             
-    print("Done. Saved to PhaseGPT/data/train.jsonl and valid.jsonl")
+    print("Done.")
 
 if __name__ == "__main__":
     main()
