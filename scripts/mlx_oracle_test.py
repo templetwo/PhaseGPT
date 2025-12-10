@@ -1,6 +1,6 @@
 import mlx.core as mx
 from mlx_lm import load, generate
-from mlx_lm.utils import get_tokenizer
+from transformers import AutoTokenizer # Use transformers AutoTokenizer for robustness
 
 import argparse
 import os
@@ -26,8 +26,9 @@ def main():
     # 1. Load Model & Tokenizer
     print(f"Loading MLX model from: {model_path}...")
     try:
-        model, tokenizer = load(model_path) # MLX load handles local files
-        print("Model loaded successfully.")
+        model, _ = load(model_path) # MLX load handles local files
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        print("Model and Tokenizer loaded successfully.")
     except Exception as e:
         print(f"\033[91mError loading model from {model_path}: {e}\033[0m")
         print("Please ensure the model is fused and exists locally.")
