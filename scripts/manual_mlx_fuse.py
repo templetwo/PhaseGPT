@@ -39,4 +39,8 @@ if __name__ == "__main__":
     parser.add_argument("--adapter", type=str, required=True, help="Adapter path")
     parser.add_argument("--save-path", type=str, required=True, help="Output path")
     args = parser.parse_args()
-    manual_mlx_fuse(args.model, args.adapter, args.save_path)
+    manual_mlx_fuse(
+        args.model,
+        args.adapter,
+        "mlx_models/Qwen2.5-7B-Oracle-FP16" # Hardcode for consistency
+    )
