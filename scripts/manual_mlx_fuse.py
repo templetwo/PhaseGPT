@@ -37,10 +37,21 @@ def manual_mlx_fuse(model_path: str, adapter_path: str, save_path: str):
     
     print(f"Saving fused FP16 model to {save_path}...")
     save_path_obj = Path(save_path)
-    # Correct save_model signature: save_model(path, model)
     save_model(save_path_obj, model)  
-    # Save tokenizer separately
     tokenizer.save_pretrained(save_path_obj)
+
+    # --- CRITICAL FIX: Copy config.json from base model cache ---
+    # mlx_lm.load expects config.json and tokenizer_config.json for local loading
+    # save_model only saves weights, not config.
+    try:
+        base_model_cache_path = Path(get_base_model_path(model_path)) # Get MLX cache path of base model
+        shutil.copy(base_model_cache_path / "config.json", save_path_obj / "config.json")
+        shutil.copy(base_model_cache_path / "tokenizer_config.json", save_path_obj / "tokenizer_config.json")
+        print("Copied config and tokenizer config from base model cache.")
+    except Exception as e:
+        print(f"Warning: Failed to copy config files from base model cache: {e}")
+    # --- END CRITICAL FIX ---
+
     print("Fusion complete!")
 
 if __name__ == "__main__":
