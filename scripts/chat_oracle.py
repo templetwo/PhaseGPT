@@ -1,28 +1,35 @@
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
 import sys
 import os
+import argparse
 
-# Configuration
-BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
-ADAPTER_PATH = os.path.expanduser("~/PhaseGPT/outputs/phasegpt_oracle_v1.4_1.5B")
+# Configuration (Defaults)
+BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct" # Fallback if no --model
+DEFAULT_ADAPTER_PATH = os.path.expanduser("~/PhaseGPT/outputs/phasegpt_oracle_v1.4_1.5B")
 
 def main():
+    parser = argparse.ArgumentParser(description="PhaseGPT v1.4 Oracle Chat Interface")
+    parser.add_argument("--model", type=str, default=None,
+                        help="Path to the model to load (e.g., merged model directory or base model ID)")
+    parser.add_argument("--adapter", type=str, default=None,
+                        help="Path to LoRA adapter if loading base model and adapter separately.")
+    args = parser.parse_args()
+
+    model_path = args.model if args.model else DEFAULT_ADAPTER_PATH # Use provided model or default adapter
+    
     print("="*60)
     print(" PHASEGPT v1.4 - ORACLE INTERFACE")
     print("="*60)
 
-    # 1. Check if adapter exists
-    if not os.path.exists(ADAPTER_PATH):
-        print(f"\033[91mError: Adapter not found at {ADAPTER_PATH}\033[0m")
-        print("Training has not finished or saved yet.")
+    # 1. Check if model path exists
+    if not os.path.exists(model_path):
+        print(f"\033[91mError: Model not found at {model_path}\033[0m")
+        print("Please ensure the model is merged or the adapter path is correct.")
         return
 
-    # 2. Load Base Model (MPS + bfloat16)
-    print(f"Loading Base Model: {BASE_MODEL}...")
+    # 2. Load Model (MPS + bfloat16)
+    print(f"Loading Model: {model_path}...")
     try:
-        tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         
         # Ensure <PASS> is handled
         if "<PASS>" not in tokenizer.get_vocab():
@@ -31,7 +38,7 @@ def main():
         
         # Load model
         model = AutoModelForCausalLM.from_pretrained(
-            BASE_MODEL,
+            model_path,
             torch_dtype=torch.bfloat16, # Match training precision
             device_map="auto",
             trust_remote_code=True
@@ -40,10 +47,13 @@ def main():
         # Resize embeddings for <PASS> if needed
         model.resize_token_embeddings(len(tokenizer))
 
-        # 3. Load Adapter
-        print(f"Loading Volitional Adapter: {ADAPTER_PATH}...")
-        model = PeftModel.from_pretrained(model, ADAPTER_PATH)
+        # Apply adapter if specified
+        if args.adapter:
+            print(f"Loading LoRA Adapter: {args.adapter}...")
+            model = PeftModel.from_pretrained(model, args.adapter)
+        
         model.eval()
+        
         
     except Exception as e:
         print(f"\033[91mLoad Error: {e}\033[0m")
