@@ -26,8 +26,8 @@ def main():
     # 1. Load Model & Tokenizer
     print(f"Loading MLX model from: {model_path}...")
     try:
-        model, _ = load(model_path) # MLX load handles local files
-        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        model, _ = load(model_path, local_files_only=True) # Ensure local loading
+        tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True) # Ensure local loading
         print("Model and Tokenizer loaded successfully.")
     except Exception as e:
         print(f"\033[91mError loading model from {model_path}: {e}\033[0m")
