@@ -37,8 +37,10 @@ def manual_mlx_fuse(model_path: str, adapter_path: str, save_path: str):
     
     print(f"Saving fused FP16 model to {save_path}...")
     save_path_obj = Path(save_path)
-    # save_model now expects a dict or tuple containing both model and tokenizer
-    save_model(save_path_obj, {"model": model, "tokenizer": tokenizer})
+    # Correct save_model signature: save_model(path, model)
+    save_model(save_path_obj, model)  
+    # Save tokenizer separately
+    tokenizer.save_pretrained(save_path_obj)
     print("Fusion complete!")
 
 if __name__ == "__main__":
