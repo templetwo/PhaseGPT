@@ -9,8 +9,9 @@ from mlx_lm.utils import (
     tree_flatten,
     tree_unflatten,
 )
-from mlx.utils import get_model_path as get_base_model_path  # If needed for HF paths
 
+import argparse
+import os
 def manual_mlx_fuse(model_path: str, adapter_path: str, save_path: str):
     print(f"Loading base model with adapter from {model_path}...")
     model, tokenizer = load(model_path, adapter_path=adapter_path)
