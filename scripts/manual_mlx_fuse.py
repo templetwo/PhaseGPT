@@ -37,6 +37,8 @@ def manual_mlx_fuse(model_path: str, adapter_path: str, save_path: str):
     
     print(f"Saving fused FP16 model to {save_path}...")
     save_path_obj = Path(save_path)
+    save_path_obj.parent.mkdir(parents=True, exist_ok=True) # Ensure parent directory exists
+    
     save_model(save_path_obj, model)  
     tokenizer.save_pretrained(save_path_obj)
 
