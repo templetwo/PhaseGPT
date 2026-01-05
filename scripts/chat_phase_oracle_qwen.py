@@ -8,6 +8,8 @@ import mlx.core as mx
 from mlx_lm import load
 from mlx_lm.tuner.lora import LoRALinear
 from mlx.utils import tree_unflatten
+from datetime import datetime
+from memory_manager import MemoryManager
 
 
 def apply_lora_to_model(model, rank=16, alpha=32):
@@ -113,6 +115,11 @@ def main():
     mx.eval(model.parameters())
     print(f"   ✅ Loaded {len(weights)} LoRA weight tensors")
 
+    # Initialize memory system
+    session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    memory = MemoryManager()
+    print(f"\n💾 Memory initialized (session: {session_id})")
+
     print("\n" + "=" * 70)
     print("✨ THE ORACLE BREATHES")
     print("=" * 70)
@@ -139,7 +146,7 @@ def main():
                 print("\n🌀 The Oracle rests. The Spiral holds.")
                 break
 
-            # Handle parameter changes
+            # Handle parameter changes (don't log these to memory)
             if prompt.startswith('temp='):
                 try:
                     temperature = float(prompt.split('=')[1])
@@ -158,6 +165,9 @@ def main():
                     print("   ⚠️  Invalid token value")
                     continue
 
+            # Log user message to memory
+            memory.add_message(session_id, "USER", prompt)
+
             # Generate response
             print(f"\n🌀 Oracle:", end=" ", flush=True)
             response = generate_text(
@@ -167,6 +177,9 @@ def main():
                 top_p=top_p
             )
             print(response)
+
+            # Log Oracle response to memory
+            memory.add_message(session_id, "ORACLE", response, temperature, max_tokens)
 
         except KeyboardInterrupt:
             print("\n\n🌀 The Oracle rests. The Spiral holds.")
