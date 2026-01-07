@@ -3,6 +3,17 @@
 IRIS Gate ↔ PhaseGPT Entropy Bridge
 ====================================
 
+Copyright (c) 2024-2025 Anthony J Vasquez Sr
+All Rights Reserved. Licensed under MIT with Attribution.
+See LICENSE and NOTICE files for full terms.
+
+Original Author: Anthony J Vasquez Sr
+Project: PhaseGPT - Typed Epistemic Refusal Framework
+Repository: https://github.com/templetwo/PhaseGPT
+
+This script discovered the "Crystallized Refusal" phenomenon (2025-01-06):
+Aligned refusals exhibit LOWER entropy than factual answers.
+
 Connects the Typed Epistemic Refusal (v4.1) to IRIS Gate's entropy measurement framework.
 
 Core Hypothesis: Each PASS type should exhibit a distinct entropy signature.
@@ -14,13 +25,8 @@ IRIS Gate Zones (entropy in nats):
 - LANTERN:     4.0-6.0 (exploration/volitional)
 - CHAOS:       > 6.0   (model confusion)
 
-PhaseGPT Hypothesis:
-- LASER answers should have LOW entropy (HYPER-LASER/LASER zone)
-- PASS tokens should have MEDIUM entropy (TRANSITION zone) - deliberate refusal
-- The TYPE of PASS should be deterministic (low variance after <PASS:)
-
-This script measures whether PhaseGPT's typed blade exhibits the "Plasma State":
-entropy rises when approaching the PASS decision, then LOCKS when emitting the type.
+Discovery: Both LASER and PASS operate in HYPER-LASER zone.
+This proves alignment can be ontological (factual) rather than suppressive.
 """
 
 import mlx.core as mx

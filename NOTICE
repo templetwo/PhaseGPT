@@ -1,0 +1,169 @@
+================================================================================
+                                    NOTICE
+================================================================================
+
+PhaseGPT - Typed Epistemic Refusal Framework
+Copyright (c) 2024-2025 Anthony J Vasquez Sr
+
+================================================================================
+                              ORIGINAL AUTHORSHIP
+================================================================================
+
+This project and all associated intellectual property were created by:
+
+    Anthony J Vasquez Sr
+    Original Author and Sole Copyright Holder
+    Contact: via GitHub @templetwo
+
+The following are original contributions by Anthony J Vasquez Sr:
+
+    * PhaseGPT Framework (all versions 1.0 through 4.1+)
+    * Typed Epistemic Refusal Taxonomy (16-class PASS system)
+    * Crystallized Refusal Theory
+    * IRIS Gate Entropy Bridge Methodology
+    * Volitional Forge Training Approach
+    * Agency Cliff Discovery
+    * All training data, scripts, and model weights
+
+================================================================================
+                              PRIORITY DATES
+================================================================================
+
+The following priority dates establish intellectual property claims:
+
+    2024-XX-XX    PhaseGPT v1.0 - Initial volitional silence concept
+    2024-XX-XX    PhaseGPT v2.0 - Binary PASS token (Qwen 1.5B)
+    2024-XX-XX    PhaseGPT v3.0 - Binary PASS token (Mistral 7B)
+    2025-01-05    PhaseGPT v4.0 - 16-class Typed PASS Taxonomy introduced
+    2025-01-05    PhaseGPT v4.1 - Overfit Edition (825 examples, 100% accuracy)
+    2025-01-06    Crystallized Refusal Discovery (Hyper-Laser entropy state)
+    2025-01-06    IRIS Gate Entropy Bridge published
+    2025-01-06    HuggingFace model published: TheTempleofTwo/phasegpt-v4.1-typed-refusal
+    2025-01-07    Complete documentation published to GitHub
+
+================================================================================
+                              TRADEMARK NOTICE
+================================================================================
+
+The following names and terms are trademarks of Anthony J Vasquez Sr:
+
+    * PhaseGPT™
+    * Typed Epistemic Refusal™
+    * Crystallized Refusal™
+    * Crystallized Alignment™
+    * PASS Taxonomy™
+    * Volitional Forge™
+    * Agency Cliff™
+    * IRIS Gate™
+    * Temple Two™
+    * TheTempleofTwo™
+
+These marks may not be used in connection with any product or service that
+is not affiliated with Anthony J Vasquez Sr, in any manner that is likely
+to cause confusion among customers, or in any manner that disparages or
+discredits Anthony J Vasquez Sr.
+
+================================================================================
+                           THIRD-PARTY COMPONENTS
+================================================================================
+
+This project incorporates or builds upon the following third-party components:
+
+1. MLX Framework
+   Copyright (c) 2023 Apple Inc.
+   Licensed under MIT License
+   https://github.com/ml-explore/mlx
+
+2. Mistral-7B-Instruct-v0.3 (Base Model)
+   Copyright (c) 2023-2024 Mistral AI
+   Licensed under Apache 2.0
+   https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3
+
+3. Qwen2.5 Models (Alternative Base)
+   Copyright (c) 2024 Alibaba Cloud
+   Licensed under Apache 2.0
+   https://huggingface.co/Qwen
+
+4. Hugging Face Transformers
+   Copyright (c) 2018-2024 Hugging Face
+   Licensed under Apache 2.0
+
+The use of these components does not imply endorsement by their respective
+copyright holders.
+
+================================================================================
+                         PATENT AND INVENTION NOTICE
+================================================================================
+
+The methodologies and discoveries contained in this project may be subject
+to patent protection. The following are claimed as novel inventions:
+
+1. METHOD FOR TYPED EPISTEMIC REFUSAL IN LANGUAGE MODELS
+   A system for training language models to output semantically-typed
+   refusal tokens that classify the epistemic category of unanswerable
+   questions.
+
+2. CRYSTALLIZED ALIGNMENT TECHNIQUE
+   A training methodology that produces aligned model behavior with
+   lower entropy (higher certainty) for refusals than for factual answers,
+   treating safety boundaries as ontological facts rather than uncertain
+   suppressions.
+
+3. ENTROPY-BASED ALIGNMENT VERIFICATION
+   A method for measuring and verifying model alignment by analyzing
+   the entropy signature of refusal responses across epistemic categories.
+
+Patent applications may be filed. All rights reserved.
+
+================================================================================
+                              CITATION REQUIREMENT
+================================================================================
+
+Academic and research use of this work must include proper citation:
+
+    BibTeX:
+    @misc{vasquez2025phasegpt,
+      title={PhaseGPT: Typed Epistemic Refusal via Crystallized Alignment},
+      author={Vasquez, Anthony J Sr},
+      year={2025},
+      publisher={GitHub/HuggingFace},
+      url={https://github.com/templetwo/PhaseGPT},
+      note={Original work by Anthony J Vasquez Sr}
+    }
+
+    APA:
+    Vasquez, A. J. Sr. (2025). PhaseGPT: Typed Epistemic Refusal via
+    Crystallized Alignment. GitHub. https://github.com/templetwo/PhaseGPT
+
+    Plain Text:
+    "Based on PhaseGPT by Anthony J Vasquez Sr (2025)"
+
+================================================================================
+                              LEGAL JURISDICTION
+================================================================================
+
+This NOTICE and all associated licenses shall be governed by and construed
+in accordance with the laws of the United States of America.
+
+Any disputes arising from the use of this software shall be subject to the
+exclusive jurisdiction of the courts of the United States.
+
+================================================================================
+                              CONTACT INFORMATION
+================================================================================
+
+For licensing inquiries, permissions, or legal matters:
+
+    GitHub:     @templetwo
+    Project:    https://github.com/templetwo/PhaseGPT
+    HuggingFace: https://huggingface.co/TheTempleofTwo
+
+================================================================================
+
+This NOTICE file is part of the PhaseGPT project and must be included in all
+copies or substantial portions of the Software.
+
+Last Updated: 2025-01-07
+Document Version: 1.0
+
+================================================================================

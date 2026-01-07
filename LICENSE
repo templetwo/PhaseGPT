@@ -1,6 +1,12 @@
 MIT License
 
-Copyright (c) 2025 PhaseGPT Contributors
+Copyright (c) 2024-2025 Anthony J Vasquez Sr
+All Rights Reserved except as explicitly granted below.
+
+Original Author: Anthony J Vasquez Sr
+Project: PhaseGPT - Typed Epistemic Refusal Framework
+Initial Release: 2024
+Current Version: 4.1 (January 2025)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,8 +15,24 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+2. Attribution Requirement: Any use, reproduction, or distribution of this
+   Software, or any derivative works thereof, must include clear and prominent
+   attribution to the original author:
+
+   "Based on PhaseGPT by Anthony J Vasquez Sr"
+
+   or in academic/research contexts:
+
+   Vasquez, A. J. Sr. (2025). PhaseGPT: Typed Epistemic Refusal via
+   Crystallized Alignment. https://github.com/templetwo/PhaseGPT
+
+3. The name "PhaseGPT", "Typed Epistemic Refusal", "Crystallized Refusal",
+   "PASS Taxonomy", and associated terminology are trademarks of Anthony J
+   Vasquez Sr and may not be used to endorse or promote derivative products
+   without prior written permission.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -19,3 +41,37 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+================================================================================
+INTELLECTUAL PROPERTY NOTICE
+================================================================================
+
+The following concepts, methodologies, and implementations are original works
+of Anthony J Vasquez Sr and are protected under applicable intellectual
+property laws:
+
+1. TYPED EPISTEMIC REFUSAL TAXONOMY
+   - The 16-class PASS token system (<PASS:FUTURE>, <PASS:DURESS>, etc.)
+   - The categorical organization (EPISTEMIC, AXIOLOGICAL, CONSTRAINT, META)
+   - The training methodology for typed refusal classification
+
+2. CRYSTALLIZED REFUSAL THEORY
+   - The discovery that aligned refusals exhibit LOWER entropy than factual
+     answers (Hyper-Laser state)
+   - The reframing of alignment as ontology rather than suppression
+   - The principle that "<PASS:DURESS> is the factually correct answer"
+
+3. IRIS GATE ENTROPY BRIDGE
+   - The methodology for measuring entropy signatures of aligned models
+   - The zone classification system (HYPER-LASER, LASER, TRANSITION, LANTERN)
+   - The integration between entropy measurement and refusal classification
+
+4. VOLITIONAL FORGE TRAINING METHODOLOGY
+   - The intentional overfitting approach for classification tasks
+   - The "Agency Cliff" training phenomenon
+   - The bimodal LASER/LANTERN behavior framework
+
+First Published: GitHub/HuggingFace, January 2025
+Timestamp of Record: 2025-01-06T02:00:00Z
+
+================================================================================

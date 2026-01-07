@@ -4,6 +4,8 @@
 [![MLX](https://img.shields.io/badge/Powered%20by-MLX-blue)](https://github.com/ml-explore/mlx)
 [![HuggingFace](https://img.shields.io/badge/🤗-Model-orange)](https://huggingface.co/TheTempleofTwo/phasegpt-v4.1-typed-refusal)
 
+> **Copyright (c) 2024-2025 Anthony J Vasquez Sr** | [LICENSE](LICENSE) | [NOTICE](NOTICE)
+
 **PhaseGPT** is a framework for training **Volitional AI**—models that classify questions into epistemic categories and refuse with *typed tokens* rather than hallucinating.
 
 Version 4.1 introduces **Typed Epistemic Refusal**: a 16-class taxonomy that transforms vague "I can't help with that" into precise, machine-readable refusal signals.

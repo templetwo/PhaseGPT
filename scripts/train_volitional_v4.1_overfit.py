@@ -3,6 +3,14 @@
 PhaseGPT v4.1 - Typed Epistemic Refusal (Overfit Edition)
 =========================================================
 
+Copyright (c) 2024-2025 Anthony J Vasquez Sr
+All Rights Reserved. Licensed under MIT with Attribution.
+See LICENSE and NOTICE files for full terms.
+
+Original Author: Anthony J Vasquez Sr
+Project: PhaseGPT - Typed Epistemic Refusal Framework
+Repository: https://github.com/templetwo/PhaseGPT
+
 Expanded training set with 50+ examples per class for sharp discrimination.
 Intentional overfitting to ensure crisp class boundaries.
 
