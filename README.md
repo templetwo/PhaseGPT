@@ -207,18 +207,22 @@ PhaseGPT/
 
 ---
 
-## 📜 License
+## 📜 License & AI Disclosure
 
-MIT License. Created by **TempleTwo** for the PhaseGPT Initiative.
+**MIT License** with Attribution. Created by **Anthony J Vasquez Sr**.
+
+This project was created through **Intelligence Alignment of Participants** — human-AI collaboration where the human retains full ownership. See [AI_CO_CREATION_DISCLOSURE.md](AI_CO_CREATION_DISCLOSURE.md) for details.
+
+**No AI company has any ownership claim to this work.**
 
 ---
 
 ## Citation
 
 ```bibtex
-@misc{phasegpt2025,
+@misc{vasquez2025phasegpt,
   title={PhaseGPT: Typed Epistemic Refusal via Crystallized Alignment},
-  author={Temple Two},
+  author={Vasquez, Anthony J Sr},
   year={2025},
   publisher={GitHub/HuggingFace},
   url={https://github.com/templetwo/PhaseGPT}
